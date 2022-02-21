@@ -19,6 +19,9 @@ workflows:
           tag: 'communicator_users-service'
       - aws-ecs/deploy-service-update:
           cluster-name: 'communicator-dev-cluster'
+          region: AWS_REGION
+          aws-access-key-id: AWS_ACCESS_KEY_ID
+          aws-secret-access-key: AWS_SECRET_ACCESS_KEY
           container-image-name-updates: 'container=communicator_users-service,tag=communicator_users-service'
           family: communicator_users-service
           requires:
