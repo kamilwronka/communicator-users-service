@@ -1,6 +1,7 @@
 version: 2.1
 orbs:
   aws-ecr: circleci/aws-ecr@7.3.0
+  aws-ecs: circleci/aws-ecs@2.2.1
 workflows:
   build_and_push_image:
     jobs:
@@ -15,4 +16,10 @@ workflows:
           region: AWS_REGION
           repo: communicator-container-repository
           skip-when-tags-exist: false
-          tag: 'latest'
+          tag: 'communicator_users-service'
+      - aws-ecs/deploy-service-update:
+          cluster-name: 'communicator-dev-cluster'
+          container-image-name-updates: 'container=communicator_users-service,tag=communicator_users-service'
+          family: communicator_users-service
+          requires:
+            - aws-ecr/build-and-push-image
