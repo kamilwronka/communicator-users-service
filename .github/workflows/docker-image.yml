@@ -3,6 +3,7 @@ name: Build Docker image and publish to the repository
 env:
   IMAGE_NAME: communicator_users-service
   REPO_URL: rg.pl-waw.scw.cloud/communicator
+  SCALEWAY_SECRET_TOKEN: ${{ secrets.SCALEWAY_SECRET_TOKEN }}
 
 on:
   push:
@@ -22,6 +23,6 @@ jobs:
       id: package-version
       uses: martinbeentjes/npm-get-version-action@master
     - name: Login to the Docker repository
-      run: docker login $REPO_URL -u nologin -p $SCW_SECRET_TOKEN
+      run: docker login $REPO_URL -u nologin -p $SCALEWAY_SECRET_TOKEN
     - name: Build the Docker image
-      run: docker build . --file Dockerfile --tag $IMAGE_NAME:latest --tag $IMAGE_NAME:${{ steps.package-version.outputs.current-version}}
+      run: docker build . --file Dockerfile --tag $IMAGE_NAME:latest --tag $IMAGE_NAME:${{ steps.package-version.outputs.current-version }}
