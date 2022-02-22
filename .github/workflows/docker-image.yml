@@ -27,4 +27,4 @@ jobs:
     - name: Build the Docker image
       run: docker build . --file Dockerfile --tag $IMAGE_NAME:latest --tag $IMAGE_NAME:${{ steps.package-version.outputs.current-version }}
     - name: Push image to the repository
-      run: docker push $IMAGE_NAME --all-tags
+      run: docker push $REPO_URL/$IMAGE_NAME --all-tags
