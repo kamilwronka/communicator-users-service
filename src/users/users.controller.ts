@@ -1,11 +1,5 @@
 import { Body, Controller, Get, Post, Query } from '@nestjs/common';
-import {
-  Ctx,
-  EventPattern,
-  MessagePattern,
-  Payload,
-  RmqContext,
-} from '@nestjs/microservices';
+import { MessagePattern, Payload } from '@nestjs/microservices';
 import { UserId } from 'src/decorators/user-id.decorator';
 import { CreateUserAccountDto } from './dto/create-user-account.dto';
 
