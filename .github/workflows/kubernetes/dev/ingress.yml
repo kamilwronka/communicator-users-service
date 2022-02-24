@@ -14,6 +14,5 @@ spec:
         backend:
           service:
             name: communicator-users-service
-            namespace: communicator-dev
             port:
               number: 80
