@@ -32,6 +32,7 @@ async function bootstrap() {
   Logger.log('Starting application using following config:');
   Logger.log(`Port: ${port}`);
   Logger.log(`Is production: ${isProduction}`);
+  Logger.log('test');
 
   app.useGlobalPipes(new ValidationPipe({ whitelist: true }));
   await app.startAllMicroservices();
