@@ -14,6 +14,7 @@ spec:
     spec:
       imagePullSecrets:
         - name: communicator-registry-key
+          namespace: communicator-dev
       containers:
       - name: communicator-users
         image: rg.pl-waw.scw.cloud/communicator/communicator_users-service:latest
