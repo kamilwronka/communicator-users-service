@@ -24,7 +24,7 @@ jobs:
     - name: Get app version
       id: package-version
       uses: martinbeentjes/npm-get-version-action@master
-      
+
     - name: Login to the Docker repository
       run: docker login $REPO_URL -u nologin -p $SCALEWAY_SECRET_TOKEN
 
@@ -35,7 +35,7 @@ jobs:
       run: docker push $REPO_URL/$IMAGE_NAME --all-tags  
 
     - name: Set up kubernetes config
-      run: echo "${{ secrets.KUBE_CONFIG_DATA }}" | base64 -d > $KUBECONFIG
+      run: mkdir -p /home/deploy && echo "${{ secrets.KUBE_CONFIG_DATA }}" | base64 -d > $KUBECONFIG
 
     - name: Deploy manifests to dev environment
       run: kubectl apply -f  /.github/workflows/kubernetes/dev
