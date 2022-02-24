@@ -1,6 +1,7 @@
 import { TypeOrmModuleOptions } from '@nestjs/typeorm';
+import * as dotenv from 'dotenv';
 
-require('dotenv').config();
+dotenv.config();
 
 class ConfigService {
   constructor(private env: { [k: string]: string | undefined }) {}
@@ -46,6 +47,15 @@ class ConfigService {
       synchronize: true,
     };
   }
+
+  public getRabbitMQConfig() {
+    return {
+      host: this.getValue('RABBITMQ_HOST'),
+      port: this.getValue('RABBITMQ_PORT'),
+      user: this.getValue('RABBITMQ_USER'),
+      password: this.getValue('RABBITMQ_PASSWORD'),
+    };
+  }
 }
 
 const configService = new ConfigService(process.env).ensureValues([
@@ -55,6 +65,10 @@ const configService = new ConfigService(process.env).ensureValues([
   'POSTGRES_PASSWORD',
   'POSTGRES_DATABASE',
   'PORT',
+  'RABBITMQ_USER',
+  'RABBITMQ_PASSWORD',
+  'RABBITMQ_HOST',
+  'RABBITMQ_PORT',
 ]);
 
 export { configService };

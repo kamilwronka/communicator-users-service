@@ -1,0 +1,28 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: communicator-users
+  namespace: communicator-dev
+spec:
+  selector:
+    matchLabels:
+      app: communicator-users
+  template:
+    metadata:
+      labels:
+        app: communicator-users
+    spec:
+      imagePullSecrets:
+        - name: communicator-registry-key
+      containers:
+      - name: communicator-users
+        image: rg.pl-waw.scw.cloud/communicator/communicator_users-service:latest
+        resources:
+          limits:
+            memory: "256Mi"
+            cpu: "500m"
+        ports:
+          - containerPort: 4000
+        env:
+          - name: PORT
+            value: "4000"

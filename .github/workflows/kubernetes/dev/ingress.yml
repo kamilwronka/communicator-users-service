@@ -1,0 +1,19 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: communicator-users-service
+  namespace: communicator-dev
+spec:
+  ingressClassName: kong
+  rules:
+  - host: "dev.users-service.communicator.kamilwronka.com"
+    http:
+      paths:
+      - path: /
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            name: communicator-users-service
+            namespace: communicator-dev
+            port:
+              number: 80
