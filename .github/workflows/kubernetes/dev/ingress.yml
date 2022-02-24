@@ -15,4 +15,14 @@ spec:
           service:
             name: communicator-users-service
             port:
-              number: 80
+              number: 4000
+  - host: "dev.users-service.communicator.kamilwronka.com"
+    http:
+      paths:
+        - path: /test
+          pathType: ImplementationSpecific
+          backend:
+            service:
+              name: echo
+              port:
+                number: 80

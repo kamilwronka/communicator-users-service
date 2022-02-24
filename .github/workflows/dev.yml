@@ -41,4 +41,4 @@ jobs:
       run: kubectl apply -f  ./.github/workflows/kubernetes/dev
 
     - name: Deploy app to dev environment
-      run: kubectl rollout restart deployment communicator-users -n communicator-dev
+      run: kubectl rollout restart deployment communicator-users-service -n communicator-dev

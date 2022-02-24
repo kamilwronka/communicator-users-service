@@ -1,21 +1,19 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: communicator-users
+  name: communicator-users-service
   namespace: communicator-dev
 spec:
   selector:
     matchLabels:
-      app: communicator-users
+      app: communicator-users-service
   template:
     metadata:
       labels:
-        app: communicator-users
+        app: communicator-users-service
     spec:
-      imagePullSecrets:
-        - name: communicator-registry-key
       containers:
-      - name: communicator-users
+      - name: communicator-users-service
         image: rg.pl-waw.scw.cloud/communicator/communicator_users-service:latest
         resources:
           limits:
@@ -26,3 +24,52 @@ spec:
         env:
           - name: PORT
             value: "4000"
+          - name: ENV
+            value: "PROD"
+          - name: RUN_MIGRATIONS
+            value: "true"
+          - name: POSTGRES_HOST
+            valueFrom:
+              secretKeyRef:
+                name: communicator-user-service-secrets
+                key: POSTGRES_HOST
+          - name: POSTGRES_PORT
+            valueFrom:
+              secretKeyRef:
+                name: communicator-user-service-secrets
+                key: POSTGRES_PORT
+          - name: POSTGRES_USER
+            valueFrom:
+              secretKeyRef:
+                name: communicator-user-service-secrets
+                key: POSTGRES_USER
+          - name: POSTGRES_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: communicator-user-service-secrets
+                key: POSTGRES_PASSWORD
+          - name: POSTGRES_DATABASE
+            valueFrom:
+              secretKeyRef:
+                name: communicator-user-service-secrets
+                key: POSTGRES_DATABASE
+          - name: RABBITMQ_USER
+            valueFrom:
+              secretKeyRef:
+                name: communicator-user-service-secrets
+                key: RABBITMQ_USER
+          - name: RABBITMQ_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: communicator-user-service-secrets
+                key: RABBITMQ_PASSWORD
+          - name: RABBITMQ_HOST
+            valueFrom:
+              secretKeyRef:
+                name: communicator-user-service-secrets
+                key: RABBITMQ_HOST
+          - name: RABBITMQ_PORT
+            valueFrom:
+              secretKeyRef:
+                name: communicator-user-service-secrets
+                key: RABBITMQ_PORT
