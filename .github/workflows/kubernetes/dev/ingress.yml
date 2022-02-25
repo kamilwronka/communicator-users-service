@@ -3,7 +3,15 @@ kind: Ingress
 metadata:
   name: communicator-users-service
   namespace: communicator-dev
+  annotations:
+    konghq.com/protocols: "https"
+    konghq.com/https-redirect-status-code: "308"
+    konghq.com/plugins: communicator-dev-auth0-jwt
 spec:
+  tls:
+    - hosts:
+        - "dev.users-service.communicator.kamilwronka.com"
+      secretName: communicator-dev-tls
   ingressClassName: kong
   rules:
   - host: "dev.users-service.communicator.kamilwronka.com"
@@ -16,13 +24,4 @@ spec:
             name: communicator-users-service
             port:
               number: 4000
-  - host: "dev.users-service.communicator.kamilwronka.com"
-    http:
-      paths:
-        - path: /test
-          pathType: ImplementationSpecific
-          backend:
-            service:
-              name: echo
-              port:
-                number: 80
+              

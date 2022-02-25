@@ -36,3 +36,4 @@ lerna-debug.log*
 
 .env
 sa.yaml
+plugins.yml
