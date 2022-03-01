@@ -25,3 +25,30 @@ spec:
             port:
               number: 4000
               
+---
+
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: communicator-users-service-swagger
+  namespace: communicator-dev
+  annotations:
+    konghq.com/protocols: "https"
+    konghq.com/https-redirect-status-code: "308"
+spec:
+  tls:
+    - hosts:
+        - "dev.users-service.communicator.kamilwronka.com"
+      secretName: communicator-dev-tls
+  ingressClassName: kong
+  rules:
+  - host: "dev.users-service.communicator.kamilwronka.com"
+    http:
+      paths:
+      - path: /swagger
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            name: communicator-users-service
+            port:
+              number: 4000
