@@ -65,7 +65,6 @@ export class UsersService {
       const newUser = await this.repo.create({
         user_id: transformedUserId,
         email: user.email,
-        created_at: user.created_at,
       });
 
       const createdUser = await this.repo.save(newUser);

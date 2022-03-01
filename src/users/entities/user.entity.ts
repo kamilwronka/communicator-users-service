@@ -1,12 +1,15 @@
-import { Entity, Column, PrimaryColumn } from 'typeorm';
+import {
+  Entity,
+  Column,
+  PrimaryColumn,
+  CreateDateColumn,
+  UpdateDateColumn,
+} from 'typeorm';
 
 @Entity()
 export class User {
   @PrimaryColumn()
   user_id: string;
-
-  @Column()
-  created_at: string;
 
   @Column({ unique: true })
   email: string;
@@ -19,6 +22,12 @@ export class User {
 
   @Column({ nullable: true })
   profile_picture_url: string;
+
+  @CreateDateColumn()
+  created_at: string;
+
+  @UpdateDateColumn()
+  updated_at: string;
 
   // @Column()
   // contacts: string[];
