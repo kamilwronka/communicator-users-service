@@ -2,19 +2,19 @@ apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: communicator-users-service
-  namespace: communicator-dev
+  namespace: communicator-prod
   annotations:
     konghq.com/protocols: https
     konghq.com/https-redirect-status-code: '308'
-    konghq.com/plugins: communicator-dev-auth0-jwt,communicator-dev-cors
+    konghq.com/plugins: communicator-prod-auth0-jwt,communicator-prod-cors
 spec:
   tls:
     - hosts:
-        - dev.users-service.communicator.kamilwronka.com
-      secretName: communicator-dev-tls
+        - prod.users-service.communicator.kamilwronka.com
+      secretName: communicator-prod-tls
   ingressClassName: kong
   rules:
-    - host: dev.users-service.communicator.kamilwronka.com
+    - host: prod.users-service.communicator.kamilwronka.com
       http:
         paths:
           - path: /

@@ -2,7 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: communicator-users-service
-  namespace: communicator-dev
+  namespace: communicator-prod
 spec:
   selector:
     matchLabels:
@@ -25,9 +25,7 @@ spec:
             - name: PORT
               value: '4000'
             - name: ENV
-              value: dev
-            - name: RUN_MIGRATIONS
-              value: 'true'
+              value: prod
             - name: RABBITMQ_USER
               valueFrom:
                 secretKeyRef:
@@ -48,28 +46,3 @@ spec:
                 secretKeyRef:
                   name: communicator-users-service-secrets
                   key: RABBITMQ_PORT
-            - name: POSTGRES_PORT
-              valueFrom:
-                secretKeyRef:
-                  name: communicator-users-service-secrets
-                  key: POSTGRES_PORT
-            - name: POSTGRES_HOST
-              valueFrom:
-                secretKeyRef:
-                  name: communicator-users-service-secrets
-                  key: POSTGRES_HOST
-            - name: POSTGRES_USER
-              valueFrom:
-                secretKeyRef:
-                  name: communicator-users-service-secrets
-                  key: POSTGRES_USER
-            - name: POSTGRES_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: communicator-users-service-secrets
-                  key: POSTGRES_PASSWORD
-            - name: POSTGRES_DATABASE
-              valueFrom:
-                secretKeyRef:
-                  name: communicator-users-service-secrets
-                  key: POSTGRES_DATABASE
