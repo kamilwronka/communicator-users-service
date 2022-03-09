@@ -12,7 +12,7 @@ class ConfigService {
       throw new Error(`config error - missing env.${key}`);
     }
 
-    return value;
+    return value.trim();
   }
 
   public ensureValues(keys: string[]) {
@@ -43,7 +43,7 @@ class ConfigService {
       cli: {
         migrationsDir: 'src/migration',
       },
-      ssl: this.isProduction(),
+      ssl: false, // this.isProduction(), - temporary, no ssl support on server side
       synchronize: true,
     };
   }

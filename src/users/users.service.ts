@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Client } from '@elastic/elasticsearch';
@@ -65,7 +69,6 @@ export class UsersService {
       const newUser = await this.repo.create({
         user_id: transformedUserId,
         email: user.email,
-        created_at: user.created_at,
       });
 
       const createdUser = await this.repo.save(newUser);
@@ -81,17 +84,22 @@ export class UsersService {
 
   async createUserProfile({ username }: CreateUserProfileDto, userId: string) {
     const user = await this.repo.findOne(userId);
+
+    if (user.profile_created) {
+      throw new BadRequestException('User already created profile.');
+    }
+
     user.username = username;
     user.profile_created = true;
 
-    await elasticClient.index({
-      index: 'users',
-      body: {
-        user_id: user.user_id,
-        username: user.username,
-        profile_picture_url: user.profile_picture_url,
-      },
-    });
+    // await elasticClient.index({
+    //   index: 'users',
+    //   body: {
+    //     user_id: user.user_id,
+    //     username: user.username,
+    //     profile_picture_url: user.profile_picture_url,
+    //   },
+    // });
 
     return this.repo.save(user);
   }

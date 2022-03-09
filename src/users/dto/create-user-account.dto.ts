@@ -1,5 +1,5 @@
 import { Type } from 'class-transformer';
-import { IsEmail, IsISO8601, IsString, ValidateNested } from 'class-validator';
+import { IsEmail, IsString, ValidateNested } from 'class-validator';
 
 class Auth0UserData {
   @IsString()
@@ -7,10 +7,6 @@ class Auth0UserData {
 
   @IsEmail()
   email: string;
-
-  @IsISO8601()
-  @IsString()
-  created_at: string;
 }
 
 export class CreateUserAccountDto {

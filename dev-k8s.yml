@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: communicator-users-service
+  labels:
+    purpose: dev
+spec:
+  containers:
+  - name: communicator-users-service
+    image: communicator-users-service
+    ports:
+    - containerPort: 4000
