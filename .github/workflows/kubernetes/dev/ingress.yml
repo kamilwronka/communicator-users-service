@@ -7,17 +7,18 @@ metadata:
     konghq.com/protocols: https
     konghq.com/https-redirect-status-code: '308'
     konghq.com/plugins: communicator-dev-auth0-jwt,communicator-dev-cors
+    konghq.com/strip-path: 'true'
 spec:
   tls:
     - hosts:
-        - dev.users-service.communicator.kamilwronka.com
+        - dev.api.communicator.kamilwronka.com
       secretName: communicator-dev-tls
   ingressClassName: kong
   rules:
-    - host: dev.users-service.communicator.kamilwronka.com
+    - host: dev.api.communicator.kamilwronka.com
       http:
         paths:
-          - path: /
+          - path: /users-service
             pathType: ImplementationSpecific
             backend:
               service:
