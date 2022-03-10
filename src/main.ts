@@ -16,7 +16,7 @@ async function bootstrap() {
     password: rabbitMQPassword,
   } = configService.getRabbitMQConfig();
 
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create(AppModule, { cors: true });
   app.connectMicroservice<MicroserviceOptions>({
     transport: Transport.RMQ,
     options: {
