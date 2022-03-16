@@ -3,6 +3,11 @@ kind: Deployment
 metadata:
   name: communicator-users-service
 spec:
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
   selector:
     matchLabels:
       app: communicator-users-service
@@ -16,9 +21,12 @@ spec:
         - name: communicator-users-service
           image: communicator
           resources:
+            requests:
+              memory: "128Mi"
+              cpu: "250m"
             limits:
-              memory: 512Mi
-              cpu: 300m
+              memory: "256Mi"
+              cpu: "500m"
           ports:
             - name: container-port
               containerPort: 4000
