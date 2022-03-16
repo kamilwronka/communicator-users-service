@@ -9,5 +9,6 @@ RUN yarn
 COPY . .
 
 EXPOSE 4000
+ENV GOOGLE_APPLICATION_CREDENTIALS="sa-key.json"
 
 ENTRYPOINT [ "yarn", "start:dev" ]

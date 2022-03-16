@@ -5,7 +5,7 @@ metadata:
   annotations:
     konghq.com/protocols: https
     konghq.com/https-redirect-status-code: "308"
-    konghq.com/plugins: jwt,cors
+    konghq.com/plugins: jwt, communicator-dev-cors
     konghq.com/strip-path: "true"
 spec:
   tls:
@@ -17,7 +17,7 @@ spec:
     - host: dev.api.communicator.kamilwronka.com
       http:
         paths:
-          - path: /users
+          - path: /users-service
             pathType: ImplementationSpecific
             backend:
               service:

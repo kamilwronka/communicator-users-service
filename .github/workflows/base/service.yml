@@ -4,6 +4,7 @@ metadata:
   name: communicator-users-service
   labels:
     app: communicator-users-service
+    service: communicator-users-service
 spec:
   ports:
     - port: 4000
@@ -12,3 +13,10 @@ spec:
       name: http
   selector:
     app: communicator-users-service
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: communicator-users-service
+  labels:
+    account: communicator-users-service
