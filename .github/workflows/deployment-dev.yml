@@ -13,7 +13,8 @@ env:
   IMAGE: communicator_users-service
   REPOSITORY: ${{ secrets.REPOSITORY }}
   ENVIRONMENT: dev
-  NAMESPACE: communicator-dev
+  NAMESPACE: communicator-dev\
+  DOCKER_BUILDKIT: 0
 
 jobs:
   setup-build-publish-deploy:
@@ -42,6 +43,10 @@ jobs:
           cluster_name: ${{ env.GKE_CLUSTER }}
           location: ${{ env.GKE_ZONE }}
           credentials: ${{ secrets.GKE_SA_KEY }}
+
+      # Disable docker buildkit
+      - name: Disable docker buildkit
+        run: DOCKER_BUILDKIT=0
 
       # Build the Docker image
       - name: Build
