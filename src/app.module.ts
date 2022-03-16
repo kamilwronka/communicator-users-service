@@ -1,15 +1,20 @@
 import { Module } from '@nestjs/common';
 import { RouterModule } from '@nestjs/core';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
+import { TerminusModule } from '@nestjs/terminus';
+
 import { configService } from './config/config.service';
 import { UserServersModule } from './users/modules/user-servers/user-servers.module';
 import { UsersModule } from './users/users.module';
+import { HealthController } from './health/health.controller';
 
 @Module({
   imports: [
-    TypeOrmModule.forRoot(configService.getTypeOrmConfig()),
+    TypeOrmModule.forRootAsync({
+      useFactory: async () => {
+        return configService.getTypeOrmConfig();
+      },
+    }),
     UsersModule,
     RouterModule.register([
       {
@@ -18,8 +23,9 @@ import { UsersModule } from './users/users.module';
         children: [{ path: 'servers', module: UserServersModule }],
       },
     ]),
+    TerminusModule,
   ],
-  controllers: [AppController],
-  providers: [AppService],
+  controllers: [HealthController],
+  providers: [],
 })
 export class AppModule {}

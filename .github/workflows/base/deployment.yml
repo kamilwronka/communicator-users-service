@@ -1,0 +1,51 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: communicator-users-service
+spec:
+  selector:
+    matchLabels:
+      app: communicator-users-service
+  template:
+    metadata:
+      labels:
+        app: communicator-users-service
+  spec:
+    containers:
+      - name: communicator-users-service
+        image: communicator
+        resources:
+          limits:
+            memory: 512Mi
+            cpu: 300m
+        ports:
+          - name: container-port
+            containerPort: 4000
+        env:
+          - name: PORT
+            value: "4000"
+          - name: ENV
+            value: dev
+          - name: RUN_MIGRATIONS
+            value: "true"
+
+        livenessProbe:
+          httpGet:
+            path: /healthz
+            port: container-port
+          initialDelaySeconds: 3
+          periodSeconds: 3
+
+        readinessProbe:
+          httpGet:
+            path: /healthz
+            port: container-port
+          initialDelaySeconds: 3
+          periodSeconds: 3
+
+        startupProbe:
+          httpGet:
+          path: /healthz
+          port: liveness-port
+        failureThreshold: 30
+        periodSeconds: 10

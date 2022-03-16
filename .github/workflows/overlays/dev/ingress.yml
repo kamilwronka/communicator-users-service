@@ -1,0 +1,26 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: communicator-users-service
+  annotations:
+    konghq.com/protocols: https
+    konghq.com/https-redirect-status-code: "308"
+    konghq.com/plugins: jwt,cors
+    konghq.com/strip-path: "true"
+spec:
+  tls:
+    - hosts:
+        - dev.api.communicator.kamilwronka.com
+      secretName: tls
+  ingressClassName: kong
+  rules:
+    - host: dev.api.communicator.kamilwronka.com
+      http:
+        paths:
+          - path: /users
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: communicator-users-service
+                port:
+                  number: 4000

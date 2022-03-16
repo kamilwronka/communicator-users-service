@@ -4,7 +4,6 @@ metadata:
   name: communicator-users-service
   labels:
     app: communicator-users-service
-  namespace: communicator-prod
 spec:
   ports:
     - port: 4000
