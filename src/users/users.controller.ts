@@ -1,4 +1,12 @@
-import { Body, Controller, Get, Headers, Post, Query } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Headers,
+  Param,
+  Post,
+  Query,
+} from '@nestjs/common';
 import { UserId } from 'src/decorators/user-id.decorator';
 import { CreateUserDto } from './dto/create-user-account.dto';
 
@@ -12,8 +20,12 @@ export class UsersController {
 
   @Get('me')
   async getUserData(@UserId() userId: string) {
-    const user = await this.usersService.findOne(userId);
-    return user;
+    return this.usersService.findOne(userId);
+  }
+
+  @Get('data/:userId')
+  async getUserById(@Param('userId') userId: string) {
+    return this.usersService.findOne(userId);
   }
 
   @Get('search')
