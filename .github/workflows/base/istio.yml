@@ -28,15 +28,17 @@ apiVersion: security.istio.io/v1beta1
 kind: AuthorizationPolicy
 metadata:
   name: deny-path-from-outside
+  namespace: communicator-dev
 spec:
   selector:
     matchLabels:
-      app: communicator-auth-hooks-service
+      app: communicator-users-service
   action: DENY
   rules:
     - from:
         - source:
-            notNamespaces: ["communicator-dev"]
+            notPrincipals:
+              - "cluster.local/ns/communicator-dev/sa/communicator-auth-hooks-service"
       to:
         - operation:
             paths: ["/users/create/account"]
