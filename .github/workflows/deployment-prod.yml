@@ -12,11 +12,11 @@ on:
 
 env:
   PROJECT_ID: ${{ secrets.GKE_PROJECT }}
-  GKE_CLUSTER: cluster-1 # Add your cluster name here.
-  GKE_ZONE: europe-central2-a # Add your cluster zone here.
-  DEPLOYMENT_NAME: users-service # Add your deployment name here.
+  GKE_CLUSTER: ${{ secrets.GKE_CLUSTER_NAME }}
+  GKE_ZONE: europe-central2-a
+  DEPLOYMENT_NAME: users-service
   IMAGE: communicator_users-service
-  REPO_NAME: ${{ secrets.REPO_NAME }}
+  REPOSITORY: ${{ secrets.REPOSITORY }}
   ENVIRONMENT: prod
   NAMESPACE: communicator-prod
 
