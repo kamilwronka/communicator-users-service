@@ -1,10 +1,10 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: communicator-users-service
+  name: users-service
   labels:
-    app: communicator-users-service
-    service: communicator-users-service
+    app: users-service
+    service: users-service
   annotations:
     ingress.kubernetes.io/service-upstream: "true"
 spec:
@@ -14,11 +14,11 @@ spec:
       protocol: TCP
       name: http
   selector:
-    app: communicator-users-service
+    app: users-service
 ---
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-  name: communicator-users-service
+  name: users-service
   labels:
-    account: communicator-users-service
+    account: users-service

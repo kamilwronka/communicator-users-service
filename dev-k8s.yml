@@ -3,35 +3,35 @@ apiVersion: v1
 kind: ServiceAccount
 metadata:
   namespace: communicator-dev
-  name: communicator-users-service
+  name: users-service
   labels:
-    account: communicator-users-service
+    account: users-service
 
 ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   namespace: communicator-dev
-  name: communicator-users-service
+  name: users-service
   labels:
     purpose: dev
-    app: communicator-users-service
+    app: users-service
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: communicator-users-service
+      app: users-service
 
   template:
     metadata:
       labels:
-        app: communicator-users-service
+        app: users-service
 
     spec:
-      serviceAccountName: communicator-users-service
+      serviceAccountName: users-service
       containers:
-        - name: communicator-users-service
-          image: communicator-users-service
+        - name: users-service
+          image: users-service
           ports:
             - containerPort: 4000
 ---
@@ -39,10 +39,10 @@ apiVersion: v1
 kind: Service
 metadata:
   namespace: communicator-dev
-  name: communicator-users-service
+  name: users-service
   labels:
-    app: communicator-users-service
-    service: communicator-users-service
+    app: users-service
+    service: users-service
   annotations:
     ingress.kubernetes.io/service-upstream: "true"
 spec:
@@ -52,13 +52,13 @@ spec:
       protocol: TCP
       name: http
   selector:
-    app: communicator-users-service
+    app: users-service
 
 ---
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: communicator-users-service-ingress
+  name: users-service-ingress
   namespace: communicator-dev
   annotations:
     konghq.com/plugins: jwt,communicator-dev-cors
@@ -73,7 +73,7 @@ spec:
             pathType: ImplementationSpecific
             backend:
               service:
-                name: communicator-users-service
+                name: users-service
                 port:
                   number: 4000
 ---
@@ -81,14 +81,14 @@ apiVersion: networking.istio.io/v1alpha3
 kind: VirtualService
 metadata:
   namespace: communicator-dev
-  name: communicator-users-service
+  name: users-service
 spec:
   hosts:
-    - communicator-users-service
+    - users-service
   http:
     - route:
         - destination:
-            host: communicator-users-service
+            host: users-service
       # retries:
       #   attempts: 3
       #   perTryTimeout: 2s
@@ -98,9 +98,9 @@ apiVersion: networking.istio.io/v1alpha3
 kind: DestinationRule
 metadata:
   namespace: communicator-dev
-  name: communicator-users-service
+  name: users-service
 spec:
-  host: communicator-users-service
+  host: users-service
   trafficPolicy:
     loadBalancer:
       simple: ROUND_ROBIN
@@ -113,7 +113,7 @@ metadata:
 spec:
   selector:
     matchLabels:
-      app: communicator-users-service
+      app: users-service
   action: DENY
   rules:
     - from:

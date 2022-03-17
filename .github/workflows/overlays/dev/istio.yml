@@ -1,14 +1,14 @@
 apiVersion: networking.istio.io/v1alpha3
 kind: VirtualService
 metadata:
-  name: communicator-users-service
+  name: users-service
 spec:
   hosts:
-    - communicator-users-service
+    - users-service
   http:
     - route:
         - destination:
-            host: communicator-users-service
+            host: users-service
       retries:
         attempts: 3
         perTryTimeout: 2s
@@ -17,9 +17,9 @@ spec:
 apiVersion: networking.istio.io/v1alpha3
 kind: DestinationRule
 metadata:
-  name: communicator-users-service
+  name: users-service
 spec:
-  host: communicator-users-service
+  host: users-service
   trafficPolicy:
     loadBalancer:
       simple: ROUND_ROBIN
@@ -28,11 +28,10 @@ apiVersion: security.istio.io/v1beta1
 kind: AuthorizationPolicy
 metadata:
   name: deny-path-from-outside
-  namespace: communicator-dev
 spec:
   selector:
     matchLabels:
-      app: communicator-users-service
+      app: users-service
   action: DENY
   rules:
     - from:

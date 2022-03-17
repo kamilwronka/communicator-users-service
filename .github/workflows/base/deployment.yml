@@ -1,19 +1,19 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: communicator-users-service
+  name: users-service
 spec:
   selector:
     matchLabels:
-      app: communicator-users-service
+      app: users-service
   template:
     metadata:
       labels:
-        app: communicator-users-service
+        app: users-service
     spec:
-      serviceAccountName: communicator-users-service
+      serviceAccountName: users-service
       containers:
-        - name: communicator-users-service
+        - name: users-service
           image: communicator
           resources:
             requests:

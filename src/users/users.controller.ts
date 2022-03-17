@@ -1,5 +1,4 @@
 import { Body, Controller, Get, Headers, Post, Query } from '@nestjs/common';
-import { MessagePattern, Payload } from '@nestjs/microservices';
 import { UserId } from 'src/decorators/user-id.decorator';
 import { CreateUserDto } from './dto/create-user-account.dto';
 
