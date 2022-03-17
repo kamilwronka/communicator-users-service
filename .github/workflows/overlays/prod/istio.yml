@@ -41,17 +41,7 @@ spec:
       to:
         - operation:
             paths: ["/users/create/account"]
----
-apiVersion: security.istio.io/v1beta1
-kind: AuthorizationPolicy
-metadata:
-  name: deny-path-from-outside
-spec:
-  selector:
-    matchLabels:
-      app: users-service
-  action: DENY
-  rules:
+
     - from:
         - source:
             notPrincipals:
