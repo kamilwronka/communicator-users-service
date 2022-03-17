@@ -1,0 +1,43 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: users-service
+spec:
+  hosts:
+    - users-service
+  http:
+    - route:
+        - destination:
+            host: users-service
+      retries:
+        attempts: 3
+        perTryTimeout: 2s
+        retryOn: connect-failure,refused-stream,503
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: DestinationRule
+metadata:
+  name: users-service
+spec:
+  host: users-service
+  trafficPolicy:
+    loadBalancer:
+      simple: ROUND_ROBIN
+---
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: deny-path-from-outside
+spec:
+  selector:
+    matchLabels:
+      app: users-service
+  action: DENY
+  rules:
+    - from:
+        - source:
+            notPrincipals:
+              - "cluster.local/ns/communicator-dev/sa/communicator-auth-hooks-service"
+      to:
+        - operation:
+            paths: ["/users/create/account"]

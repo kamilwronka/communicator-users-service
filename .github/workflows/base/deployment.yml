@@ -1,0 +1,45 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: users-service
+spec:
+  selector:
+    matchLabels:
+      app: users-service
+  template:
+    metadata:
+      labels:
+        app: users-service
+    spec:
+      serviceAccountName: users-service
+      containers:
+        - name: users-service
+          image: communicator
+          resources:
+            requests:
+              memory: "128Mi"
+              cpu: "250m"
+            limits:
+              memory: "256Mi"
+              cpu: "500m"
+          ports:
+            - name: container-port
+              containerPort: 4000
+          env:
+            - name: PORT
+              value: "4000"
+            - name: ENV
+              value: dev
+            - name: RUN_MIGRATIONS
+              value: "true"
+
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: container-port
+
+          readinessProbe:
+            tcpSocket:
+              port: container-port
+            initialDelaySeconds: 10
+            periodSeconds: 10

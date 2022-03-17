@@ -1,12 +1,125 @@
+---
 apiVersion: v1
-kind: Pod
+kind: ServiceAccount
 metadata:
-  name: communicator-users-service
+  namespace: communicator-dev
+  name: users-service
+  labels:
+    account: users-service
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: communicator-dev
+  name: users-service
   labels:
     purpose: dev
+    app: users-service
 spec:
-  containers:
-  - name: communicator-users-service
-    image: communicator-users-service
-    ports:
-    - containerPort: 4000
+  replicas: 1
+  selector:
+    matchLabels:
+      app: users-service
+
+  template:
+    metadata:
+      labels:
+        app: users-service
+
+    spec:
+      serviceAccountName: users-service
+      containers:
+        - name: users-service
+          image: users-service
+          ports:
+            - containerPort: 4000
+---
+apiVersion: v1
+kind: Service
+metadata:
+  namespace: communicator-dev
+  name: users-service
+  labels:
+    app: users-service
+    service: users-service
+  annotations:
+    ingress.kubernetes.io/service-upstream: "true"
+spec:
+  ports:
+    - port: 4000
+      targetPort: 4000
+      protocol: TCP
+      name: http
+  selector:
+    app: users-service
+
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: users-service-ingress
+  namespace: communicator-dev
+  annotations:
+    konghq.com/plugins: jwt,communicator-dev-cors
+    konghq.com/strip-path: "true"
+    konghq.com/preserve-host: "false"
+spec:
+  ingressClassName: kong
+  rules:
+    - http:
+        paths:
+          - path: /users-service
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: users-service
+                port:
+                  number: 4000
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  namespace: communicator-dev
+  name: users-service
+spec:
+  hosts:
+    - users-service
+  http:
+    - route:
+        - destination:
+            host: users-service
+      # retries:
+      #   attempts: 3
+      #   perTryTimeout: 2s
+      #   retryOn: connect-failure,refused-stream,503
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: DestinationRule
+metadata:
+  namespace: communicator-dev
+  name: users-service
+spec:
+  host: users-service
+  trafficPolicy:
+    loadBalancer:
+      simple: ROUND_ROBIN
+---
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: deny-path-from-outside
+  namespace: communicator-dev
+spec:
+  selector:
+    matchLabels:
+      app: users-service
+  action: DENY
+  rules:
+    - from:
+        - source:
+            notPrincipals:
+              - "cluster.local/ns/communicator-dev/sa/communicator-auth-hooks-service"
+      to:
+        - operation:
+            paths: ["/users/create/account"]

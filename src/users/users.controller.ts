@@ -1,9 +1,9 @@
-import { Body, Controller, Get, Post, Query } from '@nestjs/common';
-import { MessagePattern, Payload } from '@nestjs/microservices';
+import { Body, Controller, Get, Headers, Post, Query } from '@nestjs/common';
 import { UserId } from 'src/decorators/user-id.decorator';
-import { CreateUserAccountDto } from './dto/create-user-account.dto';
+import { CreateUserDto } from './dto/create-user-account.dto';
 
 import { CreateUserProfileDto } from './dto/create-user-profile.dto';
+import { User } from './entities/user.entity';
 import { UsersService } from './users.service';
 
 @Controller('')
@@ -16,24 +16,6 @@ export class UsersController {
     return user;
   }
 
-  @MessagePattern({ cmd: 'me' })
-  async getUserDataEvent(userId: string) {
-    const user = await this.usersService.findOne(userId);
-    return user;
-  }
-
-  @Post('create/profile')
-  async updateUser(
-    @UserId() userId: string,
-    @Body() finishUserCreationdata: CreateUserProfileDto,
-  ): Promise<any> {
-    const user = await this.usersService.createUserProfile(
-      finishUserCreationdata,
-      userId,
-    );
-    return user;
-  }
-
   @Get('search')
   async searchUser(@Query() queryParams: { query: string }) {
     console.log(queryParams.query);
@@ -41,15 +23,20 @@ export class UsersController {
     return result;
   }
 
-  @MessagePattern({ cmd: 'user_create' })
+  @Post('create/account')
   async createUser(
-    @Payload() createUserAccountData: CreateUserAccountDto,
-    // @Ctx() context: RmqContext,
-  ) {
-    const user = await this.usersService.createUserAccount(
-      createUserAccountData,
-    );
+    @Body() createUserAccountData: CreateUserDto,
+    @Headers() headers: any,
+  ): Promise<User> {
+    console.log(headers);
+    return this.usersService.createUserAccount(createUserAccountData);
+  }
 
-    return user;
+  @Post('create/profile')
+  async updateUser(
+    @UserId() userId: string,
+    @Body() finishUserCreationdata: CreateUserProfileDto,
+  ): Promise<User> {
+    return this.usersService.createUserProfile(finishUserCreationdata, userId);
   }
 }
