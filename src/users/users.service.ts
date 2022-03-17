@@ -2,6 +2,7 @@ import {
   BadRequestException,
   Injectable,
   NotFoundException,
+  UnprocessableEntityException,
 } from '@nestjs/common';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -9,8 +10,7 @@ import { Client } from '@elastic/elasticsearch';
 
 import { User } from './entities/user.entity';
 import { CreateUserProfileDto } from './dto/create-user-profile.dto';
-import { CreateUserAccountDto } from './dto/create-user-account.dto';
-import { MessageResponseStatus } from 'src/enum/messageResponseStatus.enum';
+import { CreateUserDto } from './dto/create-user-account.dto';
 
 const elasticClient = new Client({ node: 'http://elasticsearch:9200' });
 
@@ -49,7 +49,7 @@ export class UsersService {
     return result.body.hits.hits;
   }
 
-  async createUserAccount({ user }: CreateUserAccountDto) {
+  async createUserAccount({ user }: CreateUserDto) {
     const transformedUserId = user.user_id.replace('auth0|', '');
 
     try {
@@ -59,10 +59,10 @@ export class UsersService {
       });
 
       if (currentUser.length > 0) {
-        return { status: MessageResponseStatus.FAILURE };
+        throw new UnprocessableEntityException('Account already exists.');
       }
     } catch (error) {
-      return { status: MessageResponseStatus.FAILURE };
+      throw new BadRequestException();
     }
 
     try {
@@ -73,12 +73,9 @@ export class UsersService {
 
       const createdUser = await this.repo.save(newUser);
 
-      return {
-        status: MessageResponseStatus.SUCCESS,
-        data: createdUser,
-      };
+      return createdUser;
     } catch (error) {
-      return { status: MessageResponseStatus.FAILURE };
+      throw new UnprocessableEntityException();
     }
   }
 

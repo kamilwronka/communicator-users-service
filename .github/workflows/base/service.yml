@@ -5,6 +5,8 @@ metadata:
   labels:
     app: communicator-users-service
     service: communicator-users-service
+  annotations:
+    ingress.kubernetes.io/service-upstream: "true"
 spec:
   ports:
     - port: 4000

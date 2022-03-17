@@ -5,3 +5,4 @@ bases:
 patchesStrategicMerge:
   - hpa.yml
   - ingress.yml
+  - istio.yml
