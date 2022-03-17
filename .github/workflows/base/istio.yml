@@ -37,7 +37,7 @@ spec:
     - from:
         - source:
             notPrincipals:
-              - "cluster.local/ns/communicator-dev/sa/communicator-auth-hooks-service"
+              - "cluster.local/ns/communicator-dev/sa/auth-hooks-service"
       to:
         - operation:
             paths: ["/users/create/account"]
