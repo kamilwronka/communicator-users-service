@@ -41,3 +41,11 @@ spec:
       to:
         - operation:
             paths: ["/users/create/account"]
+
+    - from:
+        - source:
+            notPrincipals:
+              - "cluster.local/ns/communicator-dev/sa/server-management-service"
+      to:
+        - operation:
+            paths: ["/users/data/*"]
