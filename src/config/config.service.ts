@@ -30,10 +30,6 @@ class ConfigService {
       parent: 'projects/928190670092/secrets/communicator-dev-users-service',
     });
 
-    // name: 'projects/928190670092/secrets/communicator-dev-users-service',
-
-    console.log(versions);
-
     const secret = await client.accessSecretVersion({
       name: versions[0].name,
     });

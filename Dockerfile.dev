@@ -1,14 +1,21 @@
 FROM node:latest
 
 WORKDIR /usr/src/app
+ENV GOOGLE_APPLICATION_CREDENTIALS="sa-key.json"
 
-COPY package.json ./
+COPY package.json package-lock.json sa-key.json .npmrc ./
 
-RUN yarn
+# authenticate with artifact registry
+RUN npm install -g google-artifactregistry-auth
+RUN npm run artifactregistry-login
+
+# install force resolutions package
+RUN npm install -g npm-force-resolutions
+
+RUN npm install
 
 COPY . .
 
 EXPOSE 4000
-ENV GOOGLE_APPLICATION_CREDENTIALS="sa-key.json"
 
-ENTRYPOINT [ "yarn", "start:dev" ]
+ENTRYPOINT [ "npm", "run", "start:dev" ]
