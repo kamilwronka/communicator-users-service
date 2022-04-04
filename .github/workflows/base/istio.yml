@@ -46,6 +46,7 @@ spec:
         - source:
             notPrincipals:
               - "cluster.local/ns/communicator-dev/sa/server-management-service"
+              - "cluster.local/ns/communicator-dev/sa/channels-service"
       to:
         - operation:
             paths: ["/users/data/*"]
