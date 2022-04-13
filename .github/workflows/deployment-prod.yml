@@ -9,8 +9,8 @@ env:
   PROJECT_ID: ${{ secrets.GKE_PROJECT }}
   GKE_CLUSTER: ${{ secrets.GKE_CLUSTER_NAME }}
   GKE_ZONE: europe-central2-a
-  DEPLOYMENT_NAME: users-service
-  IMAGE: communicator_users-service
+  DEPLOYMENT_NAME: users
+  IMAGE: communicator_users
   REPOSITORY: ${{ secrets.REPOSITORY }}
   ENVIRONMENT: prod
   NAMESPACE: communicator-prod
