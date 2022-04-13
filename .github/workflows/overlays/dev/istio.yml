@@ -1,14 +1,14 @@
 apiVersion: networking.istio.io/v1alpha3
 kind: VirtualService
 metadata:
-  name: users-service
+  name: users
 spec:
   hosts:
-    - users-service
+    - users
   http:
     - route:
         - destination:
-            host: users-service
+            host: users
       retries:
         attempts: 3
         perTryTimeout: 2s
@@ -17,9 +17,9 @@ spec:
 apiVersion: networking.istio.io/v1alpha3
 kind: DestinationRule
 metadata:
-  name: users-service
+  name: users
 spec:
-  host: users-service
+  host: users
   trafficPolicy:
     loadBalancer:
       simple: ROUND_ROBIN
@@ -31,13 +31,13 @@ metadata:
 spec:
   selector:
     matchLabels:
-      app: users-service
+      app: users
   action: DENY
   rules:
     - from:
         - source:
             notPrincipals:
-              - "cluster.local/ns/communicator-dev/sa/auth-hooks-service"
+              - "cluster.local/ns/communicator-dev/sa/auth-hooks"
       to:
         - operation:
             paths: ["/users/create/account"]
@@ -45,8 +45,8 @@ spec:
     - from:
         - source:
             notPrincipals:
-              - "cluster.local/ns/communicator-dev/sa/server-management-service"
-              - "cluster.local/ns/communicator-dev/sa/channels-service"
+              - "cluster.local/ns/communicator-dev/sa/servers"
+              - "cluster.local/ns/communicator-dev/sa/channels"
       to:
         - operation:
             paths: ["/users/data/*"]
