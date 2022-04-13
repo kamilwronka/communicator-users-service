@@ -61,7 +61,7 @@ class ConfigService {
 
   public isProduction() {
     const env = this.getValue('ENV', false);
-    return env !== 'DEV';
+    return env !== 'dev';
   }
 
   public getTypeOrmConfig(): TypeOrmModuleOptions {
