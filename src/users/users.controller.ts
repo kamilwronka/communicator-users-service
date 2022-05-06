@@ -35,16 +35,14 @@ export class UsersController {
     return result;
   }
 
-  @Post('create/account')
+  @Post('account')
   async createUser(
     @Body() createUserAccountData: CreateUserDto,
-    @Headers() headers: any,
   ): Promise<User> {
-    console.log(headers);
     return this.usersService.createUserAccount(createUserAccountData);
   }
 
-  @Post('create/profile')
+  @Post('profile')
   async updateUser(
     @UserId() userId: string,
     @Body() finishUserCreationdata: CreateUserProfileDto,

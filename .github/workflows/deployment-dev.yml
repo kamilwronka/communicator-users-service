@@ -8,7 +8,7 @@ on:
 env:
   PROJECT_ID: ${{ secrets.GKE_PROJECT }}
   GKE_CLUSTER: ${{ secrets.GKE_CLUSTER_NAME }}
-  GKE_ZONE: europe-central2-a
+  GKE_ZONE: europe-central2-b
   DEPLOYMENT_NAME: users
   IMAGE: communicator_users
   REPOSITORY: ${{ secrets.REPOSITORY }}
@@ -20,7 +20,7 @@ jobs:
   setup-build-publish-deploy:
     name: Setup, Build, Publish, and Deploy
     runs-on: ubuntu-latest
-    environment: $ENVIRONMENT
+    environment: dev
 
     steps:
       - name: Checkout
