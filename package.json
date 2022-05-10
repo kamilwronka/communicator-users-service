@@ -26,6 +26,7 @@
     "minimist": "^1.2.6"
   },
   "dependencies": {
+    "@communicator/common": "^1.0.4",
     "@elastic/elasticsearch": "^7.16.0",
     "@google-cloud/secret-manager": "^3.11.0",
     "@nestjs/common": "^8.0.0",
