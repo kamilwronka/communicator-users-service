@@ -2,6 +2,7 @@ import { Logger, ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { MicroserviceOptions, Transport } from '@nestjs/microservices';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { json } from 'express';
 
 import { AppModule } from './app.module';
 import { configService } from './config/config.service';
@@ -31,6 +32,8 @@ async function bootstrap() {
   //     },
   //   },
   // });
+
+  app.use(json({ limit: '5mb' }));
 
   Logger.log('Starting application using following config:');
   Logger.log(`Port: ${port}`);

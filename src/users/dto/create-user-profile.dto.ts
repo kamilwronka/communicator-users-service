@@ -1,8 +1,12 @@
-import { IsString } from 'class-validator';
+import { IsBase64, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
 export class CreateUserProfileDto {
+  @IsNotEmpty()
   @IsString()
   username: string;
 
-  profile_picture_url: string;
+  @IsOptional()
+  @IsNotEmpty()
+  @IsBase64()
+  data?: string;
 }
