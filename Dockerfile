@@ -31,7 +31,7 @@ RUN npm run build
 RUN npm prune --production
 
 # run node prune
-RUN /usr/local/bin/node-prune
+# RUN /usr/local/bin/node-prune
 
 FROM node:16-alpine
 WORKDIR /usr/src/app
