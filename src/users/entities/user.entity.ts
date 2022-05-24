@@ -4,7 +4,9 @@ import {
   PrimaryColumn,
   CreateDateColumn,
   UpdateDateColumn,
+  OneToMany,
 } from 'typeorm';
+import { Relationship } from './relationship.entity';
 
 @Entity()
 export class User {
@@ -28,6 +30,18 @@ export class User {
 
   @UpdateDateColumn()
   updated_at: string;
+
+  @OneToMany(
+    () => Relationship,
+    (relationsip: Relationship) => relationsip.creator,
+  )
+  sentRelationshipRequests: Relationship[];
+
+  @OneToMany(
+    () => Relationship,
+    (relationsip: Relationship) => relationsip.receiver,
+  )
+  receivedRelationshipRequests: Relationship[];
 
   // @Column()
   // contacts: string[];

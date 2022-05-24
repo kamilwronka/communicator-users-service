@@ -28,6 +28,7 @@
   "dependencies": {
     "@communicator/common": "^1.0.4",
     "@elastic/elasticsearch": "^7.16.0",
+    "@google-cloud/pubsub": "^2.19.4",
     "@google-cloud/secret-manager": "^3.11.0",
     "@nestjs/axios": "^0.0.8",
     "@nestjs/common": "^8.0.0",
@@ -43,6 +44,7 @@
     "class-validator": "^0.13.2",
     "dotenv": "^10.0.0",
     "nanoid": "^3.3.4",
+    "nestjs-google-pubsub-microservice": "^2.2.0",
     "pg": "^8.7.1",
     "reflect-metadata": "^0.1.13",
     "rimraf": "^3.0.2",

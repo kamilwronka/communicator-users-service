@@ -1,9 +1,7 @@
 import { TypeOrmModuleOptions } from '@nestjs/typeorm';
 import * as dotenv from 'dotenv';
-import { SecretManagerServiceClient } from '@google-cloud/secret-manager';
 import { retrieveSecret } from '@communicator/common';
 
-const client = new SecretManagerServiceClient();
 dotenv.config();
 
 export type TConfig = {
@@ -55,9 +53,20 @@ class ConfigService {
     return this.getValue('PORT', true);
   }
 
-  public isProduction() {
-    const env = this.getValue('ENV', false);
-    return env !== 'dev';
+  public getEnvironment() {
+    return this.getValue('ENV', false);
+  }
+
+  public getPubSubConfig() {
+    const env = this.getEnvironment();
+
+    return {
+      topic: `gateway-${env}`,
+      // subscription: `gateway-${env}-sub`,
+      client: {
+        projectId: 'vaulted-acolyte-348710',
+      },
+    };
   }
 
   public getTypeOrmConfig(): TypeOrmModuleOptions {

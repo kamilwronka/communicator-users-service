@@ -1,6 +1,5 @@
 import { Logger, ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
-import { MicroserviceOptions, Transport } from '@nestjs/microservices';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { json } from 'express';
 
@@ -11,33 +10,12 @@ async function bootstrap() {
   await configService.setup(['ENV', 'PORT']);
 
   const port = configService.getPort();
-  const isProduction = configService.isProduction();
-  // const {
-  //   host: rabbitMQHost,
-  //   port: rabbitMQPort,
-  //   user: rabbitMQUser,
-  //   password: rabbitMQPassword,
-  // } = await configService.getRabbitMQConfig();
 
   const app = await NestFactory.create(AppModule, { cors: true });
-  // app.connectMicroservice<MicroserviceOptions>({
-  //   transport: Transport.RMQ,
-  //   options: {
-  //     urls: [
-  //       `amqp://${rabbitMQUser}:${rabbitMQPassword}@${rabbitMQHost}:${rabbitMQPort}/`,
-  //     ],
-  //     queue: 'users_service_queue',
-  //     queueOptions: {
-  //       durable: false,
-  //     },
-  //   },
-  // });
 
   app.use(json({ limit: '5mb' }));
 
-  Logger.log('Starting application using following config:');
-  Logger.log(`Port: ${port}`);
-  Logger.log(`Is production: ${isProduction}`);
+  Logger.log(`Starting application on port ${port}...`);
 
   const config = new DocumentBuilder()
     .setTitle('Users service API')
