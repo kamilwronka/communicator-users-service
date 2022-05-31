@@ -62,6 +62,16 @@ export class UsersService {
     return user;
   }
 
+  async findByUsername(username: string) {
+    const user = await this.repo.findOne({ username });
+
+    if (!user) {
+      throw new NotFoundException();
+    }
+
+    return user;
+  }
+
   async findUserRelationships(userId: string) {
     const relationships = await this.relationshipRepo.find({
       where: [{ creator: userId }, { receiver: userId }],
@@ -154,14 +164,15 @@ export class UsersService {
     userId: string,
     createRelationshipInviteData: CreateRelationshipInviteDto,
   ) {
-    if (userId === createRelationshipInviteData.user_id) {
+    const invitedUser = await this.findByUsername(
+      createRelationshipInviteData.username,
+    );
+
+    if (userId === invitedUser.user_id) {
       throw new BadRequestException('You cant add yourself.');
     }
 
     const user = await this.findOne(userId);
-    const invitedUser = await this.findOne(
-      createRelationshipInviteData.user_id,
-    );
 
     if (!user || !invitedUser) {
       throw new NotFoundException();
