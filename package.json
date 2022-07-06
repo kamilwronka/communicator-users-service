@@ -1,6 +1,6 @@
 {
   "name": "users",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "",
   "author": "",
   "private": true,
@@ -23,7 +23,7 @@
     "artifactregistry-login": "npx google-artifactregistry-auth"
   },
   "resolutions": {
-    "minimist": "^1.2.6"
+    "minimist": "1.2.6"
   },
   "dependencies": {
     "@communicator/common": "^1.0.4",
@@ -37,7 +37,7 @@
     "@nestjs/platform-express": "^8.0.0",
     "@nestjs/swagger": "^5.2.0",
     "@nestjs/terminus": "^8.0.4",
-    "@nestjs/typeorm": "^8.0.2",
+    "@nestjs/typeorm": "^8.1.4",
     "amqp-connection-manager": "^4.0.0",
     "amqplib": "^0.8.0",
     "class-transformer": "^0.5.1",
@@ -50,7 +50,7 @@
     "rimraf": "^3.0.2",
     "rxjs": "^7.2.0",
     "swagger-ui-express": "^4.3.0",
-    "typeorm": "^0.2.41"
+    "typeorm": "^0.3.0"
   },
   "devDependencies": {
     "@nestjs/cli": "^8.2.4",
