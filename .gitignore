@@ -38,3 +38,4 @@ lerna-debug.log*
 sa.yaml
 plugins.yml
 sa-key.json
+.kpt-pipeline

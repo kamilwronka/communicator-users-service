@@ -1,34 +1,35 @@
 import { Logger, ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { ConfigService } from '@nestjs/config';
 import { json } from 'express';
 
 import { AppModule } from './app.module';
-import { configService } from './config/config.service';
+import { IAppConfig } from './config/types';
 
 async function bootstrap() {
-  await configService.setup(['ENV', 'PORT']);
-
-  const port = configService.getPort();
-
   const app = await NestFactory.create(AppModule, { cors: true });
+  const configService = app.get(ConfigService);
 
-  app.use(json({ limit: '5mb' }));
+  const { port, jsonSizeLimit } = configService.get<IAppConfig>('app', {
+    infer: true,
+  });
 
-  Logger.log(`Starting application on port ${port}...`);
+  app.use(json({ limit: jsonSizeLimit }));
 
-  const config = new DocumentBuilder()
+  const swaggerConfig = new DocumentBuilder()
     .setTitle('Users service API')
     .setDescription('Users service API')
     .setVersion(process.env.npm_package_version)
     .addTag('users') //to be set
     .build();
 
-  const document = SwaggerModule.createDocument(app, config);
+  const document = SwaggerModule.createDocument(app, swaggerConfig);
   SwaggerModule.setup('swagger', app, document);
 
+  Logger.log(`Starting application on port ${port}...`);
+
   app.useGlobalPipes(new ValidationPipe({ whitelist: true }));
-  await app.startAllMicroservices();
   await app.listen(port);
 }
 bootstrap();

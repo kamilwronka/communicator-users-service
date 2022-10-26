@@ -28,12 +28,37 @@ spec:
             - name: container-port
               containerPort: 4000
           env:
-            - name: PORT
-              value: "4000"
+            #app
             - name: ENV
               value: dev
-            - name: RUN_MIGRATIONS
-              value: "true"
+            - name: PORT
+              value: "4000"
+            #postgres
+            - name: POSTGRES_HOST
+              value: users-db-postgresql
+            - name: POSTGRES_PORT
+              value: "5432"
+            - name: POSTGRES_USERNAME
+              value: postgres
+            - name: POSTGRES_DATABASE
+              value: postgres
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: users-db-postgresql
+                  key: postgres-password
+            # rabbitmq
+            - name: RABBITMQ_HOST
+              value: rabbitmq
+            - name: RABBITMQ_PORT
+              value: "5672"
+            - name: RABBITMQ_USER
+              value: user
+            - name: RABBITMQ_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: rabbitmq
+                  key: rabbitmq-password
 
           livenessProbe:
             httpGet:

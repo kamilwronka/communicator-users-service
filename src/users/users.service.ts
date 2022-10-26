@@ -1,8 +1,9 @@
 import {
   BadRequestException,
-  ForbiddenException,
+  Inject,
   Injectable,
   InternalServerErrorException,
+  Logger,
   NotFoundException,
   UnprocessableEntityException,
 } from '@nestjs/common';
@@ -12,22 +13,18 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { User } from './entities/user.entity';
 import { CreateUserProfileDto } from './dto/create-user-profile.dto';
 import { CreateUserDto } from './dto/create-user-account.dto';
-import { uploadAvatar } from 'src/services/media/media.service';
 import { nanoid } from 'nanoid';
+import { extension } from 'mime-types';
 import { CreateRelationshipInviteDto } from './dto/create-relationship-invite.dto';
 import {
   Relationship,
   RelationshipRequest,
   RelationshipStatus,
 } from './entities/relationship.entity';
-import { GCPubSubClient } from 'nestjs-google-pubsub-microservice';
-import { configService } from 'src/config/config.service';
 import { RespondToRelationshipInviteDto } from './dto/respond-to-relationship-invite.dto';
-import { createPrivateChannel } from 'src/services/servers/servers.service';
-
-const pubSubConfig = configService.getPubSubConfig();
-
-const client = new GCPubSubClient(pubSubConfig);
+import { ClientProxy } from '@nestjs/microservices';
+import { MediaService } from 'src/media/media.service';
+import { ServersService } from 'src/servers/servers.service';
 
 enum RelationshipType {
   ACCEPTED = 'ACCEPTED',
@@ -42,10 +39,14 @@ export class UsersService {
     @InjectRepository(User) private repo: Repository<User>,
     @InjectRepository(Relationship)
     private relationshipRepo: Repository<Relationship>,
+    @Inject('GATEWAY') private gatewayClient: ClientProxy,
+    private readonly mediaService: MediaService,
+    private readonly serversService: ServersService,
   ) {}
+  private readonly logger = new Logger(UsersService.name);
 
   async find(email: string) {
-    return this.repo.find({ email });
+    return this.repo.find({ where: { email } });
   }
 
   async findOne(userId: string) {
@@ -53,7 +54,7 @@ export class UsersService {
       throw new NotFoundException();
     }
 
-    const user = await this.repo.findOne(userId);
+    const user = await this.repo.findOne({ where: { user_id: userId } });
 
     if (!user) {
       throw new NotFoundException();
@@ -63,7 +64,7 @@ export class UsersService {
   }
 
   async findByUsername(username: string) {
-    const user = await this.repo.findOne({ username });
+    const user = await this.repo.findOne({ where: { username } });
 
     if (!user) {
       throw new NotFoundException();
@@ -74,7 +75,10 @@ export class UsersService {
 
   async findUserRelationships(userId: string) {
     const relationships = await this.relationshipRepo.find({
-      where: [{ creator: userId }, { receiver: userId }],
+      where: [
+        { creator: { user_id: userId } },
+        { receiver: { user_id: userId } },
+      ],
       relations: ['creator', 'receiver'],
     });
 
@@ -125,7 +129,9 @@ export class UsersService {
 
   async getUserRelationshipsInvites(userId: string) {
     const relationships = await this.relationshipRepo.find({
-      where: [{ receiver: userId, status: RelationshipStatus.PENDING }],
+      where: [
+        { receiver: { user_id: userId }, status: RelationshipStatus.PENDING },
+      ],
       relations: ['creator', 'receiver'],
     });
 
@@ -138,7 +144,9 @@ export class UsersService {
 
   async getUserRelationshipsRequests(userId: string) {
     const relationships = await this.relationshipRepo.find({
-      where: [{ creator: userId, status: RelationshipStatus.PENDING }],
+      where: [
+        { creator: { user_id: userId }, status: RelationshipStatus.PENDING },
+      ],
       relations: ['creator', 'receiver'],
     });
 
@@ -193,15 +201,15 @@ export class UsersService {
     const response = await this.relationshipRepo.save(newRelationship);
 
     try {
-      await client
-        .emit('relationship-request', {
+      await this.gatewayClient
+        .emit('relationship-requests', {
           channelId: response.receiver.user_id,
           message: {
             id: response.id,
             user: response.creator,
           },
         })
-        .toPromise();
+        .subscribe();
     } catch (error) {
       console.log(error);
     }
@@ -215,7 +223,7 @@ export class UsersService {
     data: RespondToRelationshipInviteDto,
   ) {
     const relationship = await this.relationshipRepo.findOne({
-      where: [{ id: relationshipId }],
+      where: [{ id: parseInt(relationshipId, 10) }],
       relations: ['creator', 'receiver'],
     });
 
@@ -224,7 +232,10 @@ export class UsersService {
     // }
 
     try {
-      await createPrivateChannel([relationship.creator, relationship.receiver]);
+      await this.serversService.createPrivateChannel([
+        relationship.creator,
+        relationship.receiver,
+      ]);
     } catch (error) {
       console.log(error);
 
@@ -239,8 +250,7 @@ export class UsersService {
 
     try {
       const currentUser = await this.repo.find({
-        user_id: transformedUserId,
-        email: user.email,
+        where: { user_id: transformedUserId, email: user.email },
       });
 
       if (currentUser.length > 0) {
@@ -265,28 +275,36 @@ export class UsersService {
   }
 
   async createUserProfile(
-    { username, data }: CreateUserProfileDto,
+    { username }: CreateUserProfileDto,
     userId: string,
+    file?: Express.Multer.File,
   ) {
-    const user = await this.repo.findOne(userId);
+    const user = await this.repo.findOne({ where: { user_id: userId } });
 
     if (!user) {
-      throw new BadRequestException('No such user.');
+      throw new NotFoundException('No such user');
     }
 
     if (user.profile_created) {
-      throw new BadRequestException('User already created profile.');
+      throw new BadRequestException('User already created profile');
     }
 
-    if (data) {
+    if (file) {
       const imageId = nanoid();
+      const { mimetype: mimeType } = file;
+      const key = `avatars/${userId}/${imageId}.${extension(mimeType)}`;
 
-      const profilePictureUrl = await uploadAvatar(
-        `avatars/${userId}/${imageId}.png`,
-        data,
-      );
+      try {
+        const profilePictureUrl = await this.mediaService.uploadFile({
+          key,
+          file,
+          mimeType,
+        });
 
-      user.profile_picture_url = profilePictureUrl.file_url;
+        user.profile_picture_url = profilePictureUrl.fileUrl;
+      } catch (error) {
+        this.logger.error('Unable to upload profile picture.');
+      }
     }
 
     user.username = username;

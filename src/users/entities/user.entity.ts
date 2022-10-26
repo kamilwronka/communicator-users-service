@@ -5,7 +5,6 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
   OneToMany,
-  Generated,
 } from 'typeorm';
 import { Relationship } from './relationship.entity';
 
@@ -36,16 +35,11 @@ export class User {
     () => Relationship,
     (relationsip: Relationship) => relationsip.creator,
   )
-  sentRelationshipRequests: Relationship[];
+  sent_relationship_requests: Relationship[];
 
   @OneToMany(
     () => Relationship,
     (relationsip: Relationship) => relationsip.receiver,
   )
-  receivedRelationshipRequests: Relationship[];
-
-  // @Column()
-  // contacts: string[];
-
-  // servers: string[];
+  received_relationship_requests: Relationship[];
 }

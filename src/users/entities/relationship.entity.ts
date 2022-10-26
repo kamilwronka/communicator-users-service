@@ -25,10 +25,10 @@ export class Relationship {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @ManyToOne(() => User, (user: User) => user.sentRelationshipRequests)
+  @ManyToOne(() => User, (user: User) => user.sent_relationship_requests)
   creator: User;
 
-  @ManyToOne(() => User, (user: User) => user.receivedRelationshipRequests)
+  @ManyToOne(() => User, (user: User) => user.received_relationship_requests)
   receiver: User;
 
   @Column({ type: 'enum', enum: RelationshipStatus })

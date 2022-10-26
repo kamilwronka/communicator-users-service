@@ -12,7 +12,6 @@ env:
   ENVIRONMENT: dev
   NAMESPACE: communicator-dev
   KUBECONFIG: /home/deploy/config
-  GCP_CREDENTIALS: ${{ secrets.GKE_SA_KEY }}
 
 jobs:
   setup-build-publish-deploy:
@@ -44,7 +43,6 @@ jobs:
             --tag "$REPOSITORY/$IMAGE:$GITHUB_SHA" \
             --build-arg GITHUB_SHA="$GITHUB_SHA" \
             --build-arg GITHUB_REF="$GITHUB_REF" \
-            --build-arg GKE_SA_KEY="$GCP_CREDENTIALS" \
             .
 
       # Push the Docker image to Google Container Registry

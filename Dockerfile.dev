@@ -1,16 +1,8 @@
 FROM node:16-alpine
 
 WORKDIR /usr/src/app
-ENV GOOGLE_APPLICATION_CREDENTIALS="sa-key.json"
 
-COPY package.json package-lock.json sa-key.json .npmrc ./
-
-# authenticate with artifact registry
-RUN npm install -g google-artifactregistry-auth
-RUN npm run artifactregistry-login
-
-# install force resolutions package
-RUN npm install -g npm-force-resolutions
+COPY package.json package-lock.json .npmrc ./
 
 RUN npm install
 
