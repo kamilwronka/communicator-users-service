@@ -10,7 +10,7 @@ import { Relationship } from './relationship.entity';
 
 @Entity()
 export class User {
-  @PrimaryColumn()
+  @PrimaryColumn({ unique: true })
   user_id: string;
 
   @Column({ unique: true })

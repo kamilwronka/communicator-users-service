@@ -25,13 +25,7 @@ import { RespondToRelationshipInviteDto } from './dto/respond-to-relationship-in
 import { ClientProxy } from '@nestjs/microservices';
 import { MediaService } from 'src/media/media.service';
 import { ServersService } from 'src/servers/servers.service';
-
-enum RelationshipType {
-  ACCEPTED = 'ACCEPTED',
-  SENT_PENDING = 'SENT_PENDING',
-  RECEIVED_PENDING = 'RECEIVED_PENDING',
-  DECLINED = 'DECLINED',
-}
+import { ERelationshipTypes } from './types';
 
 @Injectable()
 export class UsersService {
@@ -50,10 +44,6 @@ export class UsersService {
   }
 
   async findOne(userId: string) {
-    if (!userId) {
-      throw new NotFoundException();
-    }
-
     const user = await this.repo.findOne({ where: { user_id: userId } });
 
     if (!user) {
@@ -73,7 +63,69 @@ export class UsersService {
     return user;
   }
 
-  async findUserRelationships(userId: string) {
+  async createUserAccount({ user }: CreateUserDto) {
+    const transformedUserId = user.user_id.replace('auth0|', '');
+
+    const currentUser = await this.repo.find({
+      where: [{ user_id: transformedUserId }, { email: user.email }],
+    });
+
+    if (currentUser.length > 0) {
+      throw new UnprocessableEntityException('Account already exists');
+    }
+
+    const newUser = await this.repo.create({
+      user_id: transformedUserId,
+      email: user.email,
+    });
+
+    const createdUser = await this.repo.save(newUser);
+
+    return createdUser;
+  }
+
+  async createUserProfile(
+    { username }: CreateUserProfileDto,
+    userId: string,
+    file?: Express.Multer.File,
+  ) {
+    const userByUsername = await this.findByUsername(username);
+
+    if (userByUsername.username === username) {
+      throw new BadRequestException('Username already exists');
+    }
+
+    const user = await this.findOne(userId);
+
+    if (user.profile_created) {
+      throw new BadRequestException('User already created profile');
+    }
+
+    if (file) {
+      const imageId = nanoid();
+      const { mimetype: mimeType } = file;
+      const key = `avatars/${userId}/${imageId}.${extension(mimeType)}`;
+
+      try {
+        const profilePictureUrl = await this.mediaService.uploadFile({
+          key,
+          file,
+          mimeType,
+        });
+
+        user.profile_picture_url = profilePictureUrl.fileUrl;
+      } catch (error) {
+        this.logger.error('Unable to upload profile picture.');
+      }
+    }
+
+    user.username = username;
+    user.profile_created = true;
+
+    return this.repo.save(user);
+  }
+
+  async getUserRelationships(userId: string) {
     const relationships = await this.relationshipRepo.find({
       where: [
         { creator: { user_id: userId } },
@@ -88,25 +140,25 @@ export class UsersService {
       let relationshipType = '';
 
       if (status === RelationshipStatus.ACCEPTED) {
-        relationshipType = RelationshipType.ACCEPTED;
+        relationshipType = ERelationshipTypes.ACCEPTED;
       }
 
       if (status === RelationshipStatus.DECLINED) {
-        relationshipType = RelationshipType.DECLINED;
+        relationshipType = ERelationshipTypes.DECLINED;
       }
 
       if (
         status === RelationshipStatus.PENDING &&
         receiver.user_id === userId
       ) {
-        relationshipType = RelationshipType.RECEIVED_PENDING;
+        relationshipType = ERelationshipTypes.RECEIVED_PENDING;
       }
 
       if (
         status === RelationshipStatus.PENDING &&
         receiver.user_id !== userId
       ) {
-        relationshipType = RelationshipType.SENT_PENDING;
+        relationshipType = ERelationshipTypes.SENT_PENDING;
       }
 
       if (receiver.user_id === userId) {
@@ -243,73 +295,5 @@ export class UsersService {
     }
 
     return this.relationshipRepo.save({ ...relationship, status: data.status });
-  }
-
-  async createUserAccount({ user }: CreateUserDto) {
-    const transformedUserId = user.user_id.replace('auth0|', '');
-
-    try {
-      const currentUser = await this.repo.find({
-        where: { user_id: transformedUserId, email: user.email },
-      });
-
-      if (currentUser.length > 0) {
-        throw new UnprocessableEntityException('Account already exists.');
-      }
-    } catch (error) {
-      throw new BadRequestException();
-    }
-
-    try {
-      const newUser = await this.repo.create({
-        user_id: transformedUserId,
-        email: user.email,
-      });
-
-      const createdUser = await this.repo.save(newUser);
-
-      return createdUser;
-    } catch (error) {
-      throw new UnprocessableEntityException();
-    }
-  }
-
-  async createUserProfile(
-    { username }: CreateUserProfileDto,
-    userId: string,
-    file?: Express.Multer.File,
-  ) {
-    const user = await this.repo.findOne({ where: { user_id: userId } });
-
-    if (!user) {
-      throw new NotFoundException('No such user');
-    }
-
-    if (user.profile_created) {
-      throw new BadRequestException('User already created profile');
-    }
-
-    if (file) {
-      const imageId = nanoid();
-      const { mimetype: mimeType } = file;
-      const key = `avatars/${userId}/${imageId}.${extension(mimeType)}`;
-
-      try {
-        const profilePictureUrl = await this.mediaService.uploadFile({
-          key,
-          file,
-          mimeType,
-        });
-
-        user.profile_picture_url = profilePictureUrl.fileUrl;
-      } catch (error) {
-        this.logger.error('Unable to upload profile picture.');
-      }
-    }
-
-    user.username = username;
-    user.profile_created = true;
-
-    return this.repo.save(user);
   }
 }

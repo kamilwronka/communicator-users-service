@@ -14,7 +14,7 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import {
   ALLOWED_FILE_TYPES,
   PROFILE_PICTURE_MAX_SIZE,
-} from 'src/constants/users';
+} from './constants/fileUpload';
 import { UserId } from 'src/decorators/user-id.decorator';
 import { CreateRelationshipInviteDto } from './dto/create-relationship-invite.dto';
 import { CreateUserDto } from './dto/create-user-account.dto';
@@ -35,7 +35,7 @@ export class UsersController {
 
   @Get('me/relationships')
   async getUserRelationships(@UserId() userId: string) {
-    return this.usersService.findUserRelationships(userId);
+    return this.usersService.getUserRelationships(userId);
   }
 
   @Post('me/relationships')
@@ -88,6 +88,7 @@ export class UsersController {
   @UseInterceptors(FileInterceptor('image'))
   async createUserProfile(
     @UserId() userId: string,
+    @Body() createProfileData: CreateUserProfileDto,
     @UploadedFile(
       new ParseFilePipeBuilder()
         .addFileTypeValidator({ fileType: ALLOWED_FILE_TYPES })
@@ -100,7 +101,6 @@ export class UsersController {
         }),
     )
     file: Express.Multer.File,
-    @Body() createProfileData: CreateUserProfileDto,
   ): Promise<User> {
     return this.usersService.createUserProfile(createProfileData, userId, file);
   }
