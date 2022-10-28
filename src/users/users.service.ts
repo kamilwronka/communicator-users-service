@@ -188,8 +188,6 @@ export class UsersService {
 
     const response = await this.relationshipRepo.save(newRelationship);
 
-    console.log(response);
-
     this.gatewayClient
       .emit('relationship-requests', {
         channelId: response.receiver.user_id,
