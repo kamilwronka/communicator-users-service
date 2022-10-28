@@ -14,8 +14,8 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import {
   ALLOWED_FILE_TYPES,
   PROFILE_PICTURE_MAX_SIZE,
-} from './constants/fileUpload';
-import { UserId } from 'src/decorators/user-id.decorator';
+} from './constants/fileUpload.constant';
+import { UserId } from 'src/decorators/userId.decorator';
 import { CreateRelationshipInviteDto } from './dto/create-relationship-invite.dto';
 import { CreateUserDto } from './dto/create-user-account.dto';
 
@@ -30,7 +30,7 @@ export class UsersController {
 
   @Get('me')
   async getUserData(@UserId() userId: string) {
-    return this.usersService.findOne(userId);
+    return this.usersService.findById(userId);
   }
 
   @Get('me/relationships')
@@ -52,8 +52,8 @@ export class UsersController {
   @Patch('me/relationships/:relationshipId')
   async respondToRelationshipRequest(
     @UserId() userId: string,
-    @Body() respondToRelationshipRequestData: RespondToRelationshipInviteDto,
     @Param('relationshipId') relationshipId: string,
+    @Body() respondToRelationshipRequestData: RespondToRelationshipInviteDto,
   ) {
     return this.usersService.respondToRelationshipRequest(
       userId,
@@ -62,23 +62,13 @@ export class UsersController {
     );
   }
 
-  @Get('me/relationships/invites')
-  async getUserRelationshipsInvites(@UserId() userId: string) {
-    return this.usersService.getUserRelationshipsInvites(userId);
-  }
-
-  @Get('me/relationships/requests')
-  async getUserRelationshipsRequests(@UserId() userId: string) {
-    return this.usersService.getUserRelationshipsRequests(userId);
-  }
-
   @Get('data/:userId')
   async getUserById(@Param('userId') userId: string) {
-    return this.usersService.findOne(userId);
+    return this.usersService.findById(userId);
   }
 
   @Post('account')
-  async createUser(
+  async createUserAccount(
     @Body() createUserAccountData: CreateUserDto,
   ): Promise<User> {
     return this.usersService.createUserAccount(createUserAccountData);

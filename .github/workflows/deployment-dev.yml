@@ -1,4 +1,4 @@
-name: Build and Deploy to GKE
+name: Build and Deploy to Kubernetes Cluster
 
 on:
   push:
@@ -23,11 +23,18 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
 
+      - name: Use Node.js for tests
+        uses: actions/setup-node@v3
+        with:
+          node-version: 19.x
+      - run: npm ci
+      - run: npm run test:cov
+
       - name: Create kubeconfig directory
         run: sudo mkdir -p /home/deploy
 
       # auth kubernetes cluster
-      - name: Auth with kubernetes cluster
+      - name: Auth with Kubernetes cluster
         run: echo "${{ secrets.KUBECONFIG }}" | base64 -d > $KUBECONFIG
 
       - name: Log in to Docker Hub
@@ -45,7 +52,7 @@ jobs:
             --build-arg GITHUB_REF="$GITHUB_REF" \
             .
 
-      # Push the Docker image to Google Container Registry
+      # Push the Docker image to Dockerhub
       - name: Publish
         run: |-
           docker push "$REPOSITORY/$IMAGE:$GITHUB_SHA"
@@ -56,7 +63,7 @@ jobs:
           curl -sfLo kustomize https://github.com/kubernetes-sigs/kustomize/releases/download/v3.1.0/kustomize_3.1.0_linux_amd64
           chmod u+x ./kustomize
 
-      # Deploy the Docker image to the GKE cluster
+      # Deploy the Docker image to the cluster
       - name: Deploy
         run: |-
           (cd .github/workflows/base && ../../../kustomize edit set image communicator=$REPOSITORY/$IMAGE:$GITHUB_SHA)

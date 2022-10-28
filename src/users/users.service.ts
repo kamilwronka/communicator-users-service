@@ -1,8 +1,8 @@
 import {
   BadRequestException,
+  ForbiddenException,
   Inject,
   Injectable,
-  InternalServerErrorException,
   Logger,
   NotFoundException,
   UnprocessableEntityException,
@@ -25,7 +25,7 @@ import { RespondToRelationshipInviteDto } from './dto/respond-to-relationship-in
 import { ClientProxy } from '@nestjs/microservices';
 import { MediaService } from 'src/media/media.service';
 import { ServersService } from 'src/servers/servers.service';
-import { ERelationshipTypes } from './types';
+import { mapUserRelationships } from './helpers/mapUserRelationships.helper';
 
 @Injectable()
 export class UsersService {
@@ -39,11 +39,7 @@ export class UsersService {
   ) {}
   private readonly logger = new Logger(UsersService.name);
 
-  async find(email: string) {
-    return this.repo.find({ where: { email } });
-  }
-
-  async findOne(userId: string) {
+  async findById(userId: string) {
     const user = await this.repo.findOne({ where: { user_id: userId } });
 
     if (!user) {
@@ -89,16 +85,16 @@ export class UsersService {
     userId: string,
     file?: Express.Multer.File,
   ) {
+    const user = await this.findById(userId);
+
+    if (user.profile_created) {
+      throw new BadRequestException('User already created profile');
+    }
+
     const userByUsername = await this.findByUsername(username, false);
 
     if (userByUsername && userByUsername.username === username) {
       throw new BadRequestException('Username already exists');
-    }
-
-    const user = await this.findOne(userId);
-
-    if (user.profile_created) {
-      throw new BadRequestException('User already created profile');
     }
 
     if (file) {
@@ -125,6 +121,30 @@ export class UsersService {
     return this.repo.save(user);
   }
 
+  async findRelationshipById(relationshipId: string) {
+    const relationship = await this.relationshipRepo.findOne({
+      where: [{ id: parseInt(relationshipId, 10) }],
+      relations: ['creator', 'receiver'],
+    });
+
+    if (!relationship) {
+      throw new NotFoundException('No such relationship');
+    }
+
+    return relationship;
+  }
+
+  async findRelationshipByUsers(creator: User, receiver: User) {
+    const relationship = await this.relationshipRepo.findOne({
+      where: [
+        { creator, receiver },
+        { creator: receiver, receiver: creator },
+      ],
+    });
+
+    return relationship;
+  }
+
   async getUserRelationships(userId: string) {
     const relationships = await this.relationshipRepo.find({
       where: [
@@ -134,90 +154,7 @@ export class UsersService {
       relations: ['creator', 'receiver'],
     });
 
-    const userList = relationships.map((relationship: Relationship) => {
-      const { status, receiver, creator, id } = relationship;
-
-      let relationshipType = '';
-
-      if (status === RelationshipStatus.ACCEPTED) {
-        relationshipType = ERelationshipTypes.ACCEPTED;
-      }
-
-      if (status === RelationshipStatus.DECLINED) {
-        relationshipType = ERelationshipTypes.DECLINED;
-      }
-
-      if (
-        status === RelationshipStatus.PENDING &&
-        receiver.user_id === userId
-      ) {
-        relationshipType = ERelationshipTypes.RECEIVED_PENDING;
-      }
-
-      if (
-        status === RelationshipStatus.PENDING &&
-        receiver.user_id !== userId
-      ) {
-        relationshipType = ERelationshipTypes.SENT_PENDING;
-      }
-
-      if (receiver.user_id === userId) {
-        return {
-          id: id,
-          type: relationshipType,
-          user: creator,
-        };
-      } else {
-        return {
-          id: id,
-          type: relationshipType,
-          user: receiver,
-        };
-      }
-    });
-
-    return userList;
-  }
-
-  async getUserRelationshipsInvites(userId: string) {
-    const relationships = await this.relationshipRepo.find({
-      where: [
-        { receiver: { user_id: userId }, status: RelationshipStatus.PENDING },
-      ],
-      relations: ['creator', 'receiver'],
-    });
-
-    const userList = relationships.map((relationship: Relationship) => {
-      return { id: relationship.id, user: relationship.creator };
-    });
-
-    return userList;
-  }
-
-  async getUserRelationshipsRequests(userId: string) {
-    const relationships = await this.relationshipRepo.find({
-      where: [
-        { creator: { user_id: userId }, status: RelationshipStatus.PENDING },
-      ],
-      relations: ['creator', 'receiver'],
-    });
-
-    const userList = relationships.map((relationship: Relationship) => {
-      return { id: relationship.id, user: relationship.receiver };
-    });
-
-    return userList;
-  }
-
-  async doesRelationshipExists(creator: User, receiver: User) {
-    const relationship = await this.relationshipRepo.findOne({
-      where: [
-        { creator, receiver },
-        { creator: receiver, receiver: creator },
-      ],
-    });
-
-    return !!relationship;
+    return mapUserRelationships(userId, relationships);
   }
 
   async createRelationship(
@@ -232,15 +169,14 @@ export class UsersService {
       throw new BadRequestException('You cant add yourself.');
     }
 
-    const user = await this.findOne(userId);
+    const user = await this.findById(userId);
 
-    if (!user || !invitedUser) {
-      throw new NotFoundException();
-    }
+    const existingRelationship = await this.findRelationshipByUsers(
+      user,
+      invitedUser,
+    );
 
-    const exists = await this.doesRelationshipExists(user, invitedUser);
-
-    if (exists) {
+    if (existingRelationship) {
       throw new UnprocessableEntityException('Already exists.');
     }
 
@@ -252,19 +188,17 @@ export class UsersService {
 
     const response = await this.relationshipRepo.save(newRelationship);
 
-    try {
-      await this.gatewayClient
-        .emit('relationship-requests', {
-          channelId: response.receiver.user_id,
-          message: {
-            id: response.id,
-            user: response.creator,
-          },
-        })
-        .subscribe();
-    } catch (error) {
-      console.log(error);
-    }
+    console.log(response);
+
+    this.gatewayClient
+      .emit('relationship-requests', {
+        channelId: response.receiver.user_id,
+        message: {
+          id: response.id,
+          user: response.creator,
+        },
+      })
+      .subscribe();
 
     return response;
   }
@@ -272,28 +206,27 @@ export class UsersService {
   async respondToRelationshipRequest(
     userId: string,
     relationshipId: string,
-    data: RespondToRelationshipInviteDto,
+    { status }: RespondToRelationshipInviteDto,
   ) {
-    const relationship = await this.relationshipRepo.findOne({
-      where: [{ id: parseInt(relationshipId, 10) }],
-      relations: ['creator', 'receiver'],
-    });
-
-    // if (userId !== relationship.receiver.user_id) {
-    //   throw new ForbiddenException();
-    // }
-
-    try {
-      await this.serversService.createPrivateChannel([
-        relationship.creator,
-        relationship.receiver,
-      ]);
-    } catch (error) {
-      console.log(error);
-
-      throw new InternalServerErrorException();
+    if (status === RelationshipStatus.PENDING) {
+      throw new BadRequestException();
     }
 
-    return this.relationshipRepo.save({ ...relationship, status: data.status });
+    const relationship = await this.findRelationshipById(relationshipId);
+
+    if (relationship.status !== RelationshipStatus.PENDING) {
+      throw new BadRequestException();
+    }
+
+    if (userId !== relationship.receiver.user_id) {
+      throw new ForbiddenException();
+    }
+
+    await this.serversService.createPrivateChannel([
+      relationship.creator,
+      relationship.receiver,
+    ]);
+
+    return this.relationshipRepo.save({ ...relationship, status });
   }
 }

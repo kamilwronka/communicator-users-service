@@ -11,7 +11,7 @@ export class ServersService {
   async createPrivateChannel(users: User[]): Promise<any> {
     const requestData = { type: 'PRIVATE', users };
 
-    const { data: responseData } = await firstValueFrom(
+    const { data } = await firstValueFrom(
       this.httpService.post('/private/channels', requestData).pipe(
         catchError((error: AxiosError) => {
           throw new BadGatewayException(error);
@@ -19,6 +19,6 @@ export class ServersService {
       ),
     );
 
-    return responseData;
+    return data;
   }
 }
