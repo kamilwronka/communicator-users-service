@@ -53,10 +53,10 @@ export class UsersService {
     return user;
   }
 
-  async findByUsername(username: string) {
+  async findByUsername(username: string, throwOnFailure = true) {
     const user = await this.repo.findOne({ where: { username } });
 
-    if (!user) {
+    if (!user && throwOnFailure) {
       throw new NotFoundException();
     }
 
@@ -89,9 +89,9 @@ export class UsersService {
     userId: string,
     file?: Express.Multer.File,
   ) {
-    const userByUsername = await this.findByUsername(username);
+    const userByUsername = await this.findByUsername(username, false);
 
-    if (userByUsername.username === username) {
+    if (userByUsername && userByUsername.username === username) {
       throw new BadRequestException('Username already exists');
     }
 
