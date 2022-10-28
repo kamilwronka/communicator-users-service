@@ -26,6 +26,7 @@ import { ClientProxy } from '@nestjs/microservices';
 import { MediaService } from 'src/media/media.service';
 import { ServersService } from 'src/servers/servers.service';
 import { mapUserRelationships } from './helpers/mapUserRelationships.helper';
+import { formatUserId } from 'src/helpers/formatUserId.helper';
 
 @Injectable()
 export class UsersService {
@@ -60,7 +61,7 @@ export class UsersService {
   }
 
   async createUserAccount({ user }: CreateUserDto) {
-    const transformedUserId = user.user_id.replace('auth0|', '');
+    const transformedUserId = formatUserId(user.user_id);
 
     const currentUser = await this.repo.find({
       where: [{ user_id: transformedUserId }, { email: user.email }],

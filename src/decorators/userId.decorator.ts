@@ -3,6 +3,8 @@ import {
   ExecutionContext,
   UnauthorizedException,
 } from '@nestjs/common';
+import { decodeJwtPayload } from 'src/helpers/decodeJwtPayload.helper';
+import { formatUserId } from 'src/helpers/formatUserId.helper';
 
 export const UserId = createParamDecorator(
   (data: unknown, ctx: ExecutionContext) => {
@@ -10,11 +12,9 @@ export const UserId = createParamDecorator(
 
     try {
       const token = request.headers.authorization;
-      const payload = token.split('.')[1];
-      const decoded = Buffer.from(payload, 'base64').toString('utf-8');
-      const parsedPayload = JSON.parse(decoded);
+      const parsedPayload = decodeJwtPayload(token);
 
-      return parsedPayload.sub.replace('auth0|', '');
+      return formatUserId(parsedPayload.sub);
     } catch (error) {
       throw new UnauthorizedException();
     }
