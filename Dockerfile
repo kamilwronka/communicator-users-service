@@ -2,7 +2,7 @@ FROM node:19-alpine AS BUILD_IMAGE
 
 WORKDIR /usr/src/app
 
-COPY package.json package-lock.json .npmrc ./
+COPY package.json package-lock.json ./
 
 RUN npm ci
 
