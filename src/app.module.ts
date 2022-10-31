@@ -65,6 +65,10 @@ import { ServersModule } from './servers/servers.module';
         RABBITMQ_PASSWORD: Joi.string(),
         RABBITMQ_HOST: Joi.string(),
         RABBITMQ_PORT: Joi.string(),
+        CLOUDFLARE_ACCOUNT_ID: Joi.string(),
+        CLOUDFLARE_ACCESS_KEY_ID: Joi.string(),
+        CLOUDFLARE_SECRET_ACCESS_KEY: Joi.string(),
+        CLOUDFLARE_R2_BUCKET_NAME: Joi.string(),
       }),
       validationOptions: {
         allowUnknown: true,
