@@ -18,6 +18,11 @@ export class UsersController {
     return this.usersService.findById(userId);
   }
 
+  @Get(':userId')
+  async getUserById(@Param('userId') userId: string) {
+    return this.usersService.findById(userId);
+  }
+
   @Get('me/relationships')
   async getUserRelationships(@UserId() userId: string) {
     return this.usersService.getUserRelationships(userId);
@@ -56,11 +61,6 @@ export class UsersController {
       relationshipId,
       respondToRelationshipRequestData,
     );
-  }
-
-  @Get('data/:userId')
-  async getUserById(@Param('userId') userId: string) {
-    return this.usersService.findById(userId);
   }
 
   @Post('account')
