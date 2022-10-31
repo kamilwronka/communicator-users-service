@@ -13,7 +13,7 @@ export default registerAs('postgres', (): IPostgresConfig => {
 
   return {
     host: POSTGRES_HOST,
-    port: parseInt(POSTGRES_PORT, 10) || 5432,
+    port: POSTGRES_PORT || 5432,
     username: POSTGRES_USERNAME,
     password: POSTGRES_PASSWORD,
     database: POSTGRES_DATABASE,

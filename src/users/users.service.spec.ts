@@ -1,14 +1,14 @@
+import { S3Client } from '@aws-sdk/client-s3';
 import {
   BadRequestException,
   ForbiddenException,
   NotFoundException,
   UnprocessableEntityException,
 } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { of } from 'rxjs';
-import { MediaService } from 'src/media/media.service';
-import { mediaServiceResponseMock } from 'src/media/__mocks__/mediaServiceResponse.mock';
 import { ServersService } from 'src/servers/servers.service';
 import { Repository } from 'typeorm';
 import {
@@ -21,11 +21,6 @@ import { UsersService } from './users.service';
 import { userProfileDataMock } from './__mocks__/userProfileData.mock';
 import { userRelationshipsFromDbMock } from './__mocks__/userRelationships.mock';
 
-jest.mock('nanoid', () => {
-  return {
-    nanoid: () => '1234',
-  };
-});
 jest.mock('./helpers/mapUserRelationships.helper', () => {
   const originalModule = jest.requireActual(
     './helpers/mapUserRelationships.helper',
@@ -42,7 +37,6 @@ describe('UsersService', () => {
   let service: UsersService;
   let repositoryMock: Repository<User>;
   let relationshipsRepositoryMock: Repository<Relationship>;
-  let mediaServiceMock: MediaService;
   let gatewayMock;
   let serversServiceMock: ServersService;
 
@@ -62,14 +56,6 @@ describe('UsersService', () => {
           useValue: { findOne: () => Promise.resolve(userProfileDataMock) },
         },
         {
-          provide: MediaService,
-          useValue: {
-            uploadFile: jest.fn(() =>
-              Promise.resolve(mediaServiceResponseMock),
-            ),
-          },
-        },
-        {
           provide: ServersService,
           useValue: { createPrivateChannel: jest.fn(() => Promise.resolve()) },
         },
@@ -79,12 +65,29 @@ describe('UsersService', () => {
             emit: jest.fn(() => of({})),
           },
         },
+        {
+          provide: S3Client,
+          useValue: {
+            test: jest.fn(),
+          },
+        },
+        {
+          provide: ConfigService,
+          useValue: {
+            get: jest.fn((key: string) => {
+              if (key === 'services') {
+                return { cdn: 'http://cdn.example.com' };
+              }
+
+              return {};
+            }),
+          },
+        },
       ],
     }).compile();
 
     service = module.get<UsersService>(UsersService);
     repositoryMock = module.get<Repository<User>>(getRepositoryToken(User));
-    mediaServiceMock = module.get<MediaService>(MediaService);
     relationshipsRepositoryMock = module.get<Repository<Relationship>>(
       getRepositoryToken(Relationship),
     );
@@ -200,52 +203,20 @@ describe('UsersService', () => {
     });
 
     it('creates profile and uploads profile picture', async () => {
-      mediaServiceMock.uploadFile = jest.fn(() =>
-        Promise.resolve({ fileUrl: 'http://test.com' }),
-      );
       const user = new User();
       repositoryMock.findOne = jest.fn(() =>
         Promise.resolve({ ...user, profile_created: false }),
       );
 
-      const file = {
-        buffer: Buffer.from('random'),
-        mimetype: 'image/png',
-      } as unknown as Express.Multer.File;
-      const userData = { username: 'username' };
+      const userData = { username: 'username', profilePictureKey: 'test.png' };
       const userId = 'userid';
 
-      await service.createUserProfile(userData, userId, file);
+      await service.createUserProfile(userData, userId);
 
-      expect(mediaServiceMock.uploadFile).toHaveBeenCalled();
       expect(repositoryMock.save).toHaveBeenCalledWith({
         ...user,
         profile_created: true,
-        profile_picture_url: 'http://test.com',
-        username: userData.username,
-      });
-    });
-
-    it('creates profile if media service fails', async () => {
-      mediaServiceMock.uploadFile = jest.fn(() => Promise.reject());
-      const user = new User();
-      repositoryMock.findOne = jest.fn(() =>
-        Promise.resolve({ ...user, profile_created: false }),
-      );
-
-      const file = {
-        buffer: Buffer.from('random'),
-        mimetype: 'image/png',
-      } as unknown as Express.Multer.File;
-      const userData = { username: 'username' };
-      const userId = 'userid';
-
-      await service.createUserProfile(userData, userId, file);
-
-      expect(mediaServiceMock.uploadFile).toHaveBeenCalled();
-      expect(repositoryMock.save).toHaveBeenCalledWith({
-        ...user,
-        profile_created: true,
+        profile_picture_url: 'http://cdn.example.com/test.png',
         username: userData.username,
       });
     });

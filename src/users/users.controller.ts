@@ -1,26 +1,11 @@
-import {
-  Body,
-  Controller,
-  Get,
-  HttpStatus,
-  Param,
-  ParseFilePipeBuilder,
-  Patch,
-  Post,
-  UploadedFile,
-  UseInterceptors,
-} from '@nestjs/common';
-import { FileInterceptor } from '@nestjs/platform-express';
-import {
-  ALLOWED_FILE_TYPES,
-  PROFILE_PICTURE_MAX_SIZE,
-} from './constants/fileUpload.constant';
+import { Body, Controller, Get, Param, Patch, Post } from '@nestjs/common';
 import { UserId } from 'src/decorators/userId.decorator';
 import { CreateRelationshipInviteDto } from './dto/create-relationship-invite.dto';
 import { CreateUserDto } from './dto/create-user-account.dto';
 
 import { CreateUserProfileDto } from './dto/create-user-profile.dto';
 import { RespondToRelationshipInviteDto } from './dto/respond-to-relationship-invite.dto';
+import { UploadProfilePictureDto } from './dto/upload-profile-picture.dto';
 import { User } from './entities/user.entity';
 import { UsersService } from './users.service';
 
@@ -36,6 +21,17 @@ export class UsersController {
   @Get('me/relationships')
   async getUserRelationships(@UserId() userId: string) {
     return this.usersService.getUserRelationships(userId);
+  }
+
+  @Post('me/profilePicture')
+  async uploadProfilePicture(
+    @Body() uploadProfilePictureData: UploadProfilePictureDto,
+    @UserId() userId: string,
+  ) {
+    return this.usersService.uploadProfilePicture(
+      uploadProfilePictureData,
+      userId,
+    );
   }
 
   @Post('me/relationships')
@@ -75,23 +71,10 @@ export class UsersController {
   }
 
   @Post('profile')
-  @UseInterceptors(FileInterceptor('image'))
   async createUserProfile(
     @UserId() userId: string,
     @Body() createProfileData: CreateUserProfileDto,
-    @UploadedFile(
-      new ParseFilePipeBuilder()
-        .addFileTypeValidator({ fileType: ALLOWED_FILE_TYPES })
-        .addMaxSizeValidator({
-          maxSize: PROFILE_PICTURE_MAX_SIZE,
-        })
-        .build({
-          fileIsRequired: false,
-          errorHttpStatusCode: HttpStatus.UNPROCESSABLE_ENTITY,
-        }),
-    )
-    file: Express.Multer.File,
   ): Promise<User> {
-    return this.usersService.createUserProfile(createProfileData, userId, file);
+    return this.usersService.createUserProfile(createProfileData, userId);
   }
 }

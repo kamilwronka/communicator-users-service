@@ -91,17 +91,9 @@ describe('UsersController', () => {
 
   describe('createUserProfile', () => {
     it('should return user profile', async () => {
-      const file = {
-        buffer: Buffer.from('random'),
-      } as unknown as Express.Multer.File;
-
-      await usersController.createUserProfile(
-        'randomId',
-        {
-          username: 'test',
-        },
-        file,
-      );
+      await usersController.createUserProfile('randomId', {
+        username: 'test',
+      });
 
       expect(usersServiceMock.createUserProfile).toHaveBeenCalled();
     });

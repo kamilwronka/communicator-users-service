@@ -8,12 +8,12 @@ import appConfig from './config/app.config';
 import postgresConfig from './config/postgres.config';
 import servicesConfig from './config/services.config';
 import rabbitmqConfig from './config/rabbitmq.config';
+import cloudflareConfig from './config/cloudflare.config';
 
 import { UsersModule } from './users/users.module';
 import { HealthController } from './health/health.controller';
 import { EEnvironment, IPostgresConfig } from './config/types';
 import { ServersModule } from './servers/servers.module';
-import { MediaModule } from './media/media.module';
 
 @Module({
   imports: [
@@ -43,7 +43,13 @@ import { MediaModule } from './media/media.module';
     }),
     ConfigModule.forRoot({
       isGlobal: true,
-      load: [appConfig, postgresConfig, servicesConfig, rabbitmqConfig],
+      load: [
+        appConfig,
+        postgresConfig,
+        servicesConfig,
+        rabbitmqConfig,
+        cloudflareConfig,
+      ],
       cache: true,
       validationSchema: Joi.object({
         ENV: Joi.string()
@@ -68,7 +74,6 @@ import { MediaModule } from './media/media.module';
     UsersModule,
     TerminusModule,
     ServersModule,
-    MediaModule,
   ],
   controllers: [HealthController],
   providers: [],

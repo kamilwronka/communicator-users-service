@@ -4,22 +4,6 @@ export enum EEnvironment {
   PROD = 'prod',
 }
 
-export interface IEnvironmentVariables {
-  ENV: EEnvironment;
-  PORT: number;
-
-  POSTGRES_HOST: string;
-  POSTGRES_PORT: number;
-  POSTGRES_USERNAME: string;
-  POSTGRES_PASSWORD: string;
-  POSTGRES_DATABASE: string;
-
-  RABBITMQ_USER: string;
-  RABBITMQ_PASSWORD: string;
-  RABBITMQ_HOST: string;
-  RABBITMQ_PORT: string;
-}
-
 export interface IPostgresConfig {
   host: string;
   port: number;
@@ -44,6 +28,13 @@ export interface IAppConfig {
 
 export interface IServicesConfig {
   servers: string;
-  media: string;
   channels: string;
+  cdn: string;
+}
+
+export interface ICloudflareConfig {
+  apiKey: string;
+  secret: string;
+  accountId: string;
+  bucketName: string;
 }

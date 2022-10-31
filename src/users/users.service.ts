@@ -13,8 +13,6 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { User } from './entities/user.entity';
 import { CreateUserProfileDto } from './dto/create-user-profile.dto';
 import { CreateUserDto } from './dto/create-user-account.dto';
-import { nanoid } from 'nanoid';
-import { extension } from 'mime-types';
 import { CreateRelationshipInviteDto } from './dto/create-relationship-invite.dto';
 import {
   Relationship,
@@ -23,10 +21,15 @@ import {
 } from './entities/relationship.entity';
 import { RespondToRelationshipInviteDto } from './dto/respond-to-relationship-invite.dto';
 import { ClientProxy } from '@nestjs/microservices';
-import { MediaService } from 'src/media/media.service';
 import { ServersService } from 'src/servers/servers.service';
 import { mapUserRelationships } from './helpers/mapUserRelationships.helper';
 import { formatUserId } from 'src/helpers/formatUserId.helper';
+import { ConfigService } from '@nestjs/config';
+import { ICloudflareConfig, IServicesConfig } from 'src/config/types';
+import { UploadProfilePictureDto } from './dto/upload-profile-picture.dto';
+import { PutObjectCommand, S3Client } from '@aws-sdk/client-s3';
+import { generateFileUploadData } from './helpers/generateFileUploadData.helper';
+import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 
 @Injectable()
 export class UsersService {
@@ -35,8 +38,9 @@ export class UsersService {
     @InjectRepository(Relationship)
     private relationshipRepo: Repository<Relationship>,
     @Inject('GATEWAY') private gatewayClient: ClientProxy,
-    private readonly mediaService: MediaService,
     private readonly serversService: ServersService,
+    private readonly configService: ConfigService,
+    private readonly s3Client: S3Client,
   ) {}
   private readonly logger = new Logger(UsersService.name);
 
@@ -82,9 +86,8 @@ export class UsersService {
   }
 
   async createUserProfile(
-    { username }: CreateUserProfileDto,
+    { username, profilePictureKey }: CreateUserProfileDto,
     userId: string,
-    file?: Express.Multer.File,
   ) {
     const user = await this.findById(userId);
 
@@ -98,28 +101,39 @@ export class UsersService {
       throw new BadRequestException('Username already exists');
     }
 
-    if (file) {
-      const imageId = nanoid();
-      const { mimetype: mimeType } = file;
-      const key = `avatars/${userId}/${imageId}.${extension(mimeType)}`;
+    if (profilePictureKey) {
+      const { cdn } = this.configService.get<IServicesConfig>('services');
 
-      try {
-        const profilePictureUrl = await this.mediaService.uploadFile({
-          key,
-          file,
-          mimeType,
-        });
-
-        user.profile_picture_url = profilePictureUrl.fileUrl;
-      } catch (error) {
-        this.logger.error('Unable to upload profile picture.');
-      }
+      user.profile_picture_url = `${cdn}/${profilePictureKey}`;
     }
 
     user.username = username;
     user.profile_created = true;
 
     return this.repo.save(user);
+  }
+
+  async uploadProfilePicture(
+    { filename }: UploadProfilePictureDto,
+    userId: string,
+  ) {
+    const { bucketName } =
+      this.configService.get<ICloudflareConfig>('cloudflare');
+    const { key, mimeType } = generateFileUploadData(
+      `users/${userId}`,
+      filename,
+    );
+
+    const presignedUrl = await getSignedUrl(
+      this.s3Client,
+      new PutObjectCommand({
+        Bucket: bucketName,
+        Key: key,
+        ContentType: mimeType,
+      }),
+    );
+
+    return { uploadUrl: presignedUrl, key };
   }
 
   async findRelationshipById(relationshipId: string) {
