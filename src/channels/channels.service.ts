@@ -9,10 +9,17 @@ export class ChannelsService {
   constructor(private readonly httpService: HttpService) {}
 
   async createPrivateChannel(users: User[]): Promise<any> {
-    const requestData = { type: 'PRIVATE', users };
+    const requestData = {
+      type: 'PRIVATE',
+      users: users.map((user) => ({
+        userId: user.user_id,
+        username: user.username,
+        profilePictureUrl: user.profile_picture_url,
+      })),
+    };
 
     const { data } = await firstValueFrom(
-      this.httpService.post('/', requestData).pipe(
+      this.httpService.post('', requestData).pipe(
         catchError((error: AxiosError) => {
           throw new BadGatewayException(error);
         }),
