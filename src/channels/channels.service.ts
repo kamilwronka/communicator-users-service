@@ -5,7 +5,7 @@ import { catchError, firstValueFrom } from 'rxjs';
 import { User } from 'src/users/entities/user.entity';
 
 @Injectable()
-export class ServersService {
+export class ChannelsService {
   constructor(private readonly httpService: HttpService) {}
 
   async createPrivateChannel(users: User[]): Promise<any> {

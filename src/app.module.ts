@@ -13,7 +13,7 @@ import cloudflareConfig from './config/cloudflare.config';
 import { UsersModule } from './users/users.module';
 import { HealthController } from './health/health.controller';
 import { EEnvironment, IPostgresConfig } from './config/types';
-import { ServersModule } from './servers/servers.module';
+import { ChannelsModule } from './channels/channels.module';
 
 @Module({
   imports: [
@@ -77,7 +77,7 @@ import { ServersModule } from './servers/servers.module';
     }),
     UsersModule,
     TerminusModule,
-    ServersModule,
+    ChannelsModule,
   ],
   controllers: [HealthController],
   providers: [],

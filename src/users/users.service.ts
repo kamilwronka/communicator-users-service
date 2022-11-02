@@ -21,7 +21,7 @@ import {
 } from './entities/relationship.entity';
 import { RespondToRelationshipInviteDto } from './dto/respond-to-relationship-invite.dto';
 import { ClientProxy } from '@nestjs/microservices';
-import { ServersService } from 'src/servers/servers.service';
+import { ChannelsService } from 'src/channels/channels.service';
 import { mapUserRelationships } from './helpers/mapUserRelationships.helper';
 import { formatUserId } from 'src/helpers/formatUserId.helper';
 import { ConfigService } from '@nestjs/config';
@@ -38,7 +38,7 @@ export class UsersService {
     @InjectRepository(Relationship)
     private relationshipRepo: Repository<Relationship>,
     @Inject('GATEWAY') private gatewayClient: ClientProxy,
-    private readonly serversService: ServersService,
+    private readonly channelsService: ChannelsService,
     private readonly configService: ConfigService,
     private readonly s3Client: S3Client,
   ) {}
@@ -90,17 +90,6 @@ export class UsersService {
     userId: string,
   ) {
     const user = await this.findById(userId);
-
-    if (user.profile_created) {
-      throw new BadRequestException('User already created profile');
-    }
-
-    const userByUsername = await this.findByUsername(username, false);
-
-    if (userByUsername && userByUsername.username === username) {
-      throw new BadRequestException('Username already exists');
-    }
-
     if (profilePictureKey) {
       const { cdn } = this.configService.get<IServicesConfig>('services');
 
@@ -235,7 +224,7 @@ export class UsersService {
       throw new ForbiddenException();
     }
 
-    await this.serversService.createPrivateChannel([
+    await this.channelsService.createPrivateChannel([
       relationship.creator,
       relationship.receiver,
     ]);

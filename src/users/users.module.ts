@@ -3,7 +3,6 @@ import { ClientsModule, Transport } from '@nestjs/microservices';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { S3Client } from '@aws-sdk/client-s3';
 
-import { ServersModule } from 'src/servers/servers.module';
 import { Relationship } from './entities/relationship.entity';
 
 import { User } from './entities/user.entity';
@@ -11,6 +10,7 @@ import { UsersController } from './users.controller';
 import { UsersService } from './users.service';
 import { ConfigService } from '@nestjs/config';
 import { ICloudflareConfig, IRabbitMqConfig } from 'src/config/types';
+import { ChannelsModule } from 'src/channels/channels.module';
 
 @Module({
   imports: [
@@ -33,7 +33,7 @@ import { ICloudflareConfig, IRabbitMqConfig } from 'src/config/types';
         },
       },
     ]),
-    ServersModule,
+    ChannelsModule,
   ],
   controllers: [UsersController],
   providers: [
