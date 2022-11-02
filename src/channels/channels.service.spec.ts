@@ -5,16 +5,16 @@ import { AxiosError, AxiosResponse } from 'axios';
 import { of, throwError } from 'rxjs';
 import { User } from 'src/users/entities/user.entity';
 
-import { ServersService } from './servers.service';
+import { ChannelsService } from './channels.service';
 
-describe('ServersService', () => {
-  let service: ServersService;
+describe('ChannelsService', () => {
+  let service: ChannelsService;
   let httpServiceMock: HttpService;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
-        ServersService,
+        ChannelsService,
         {
           provide: HttpService,
           useValue: { get: () => jest.fn(() => of({})) },
@@ -22,7 +22,7 @@ describe('ServersService', () => {
       ],
     }).compile();
 
-    service = module.get<ServersService>(ServersService);
+    service = module.get<ChannelsService>(ChannelsService);
     httpServiceMock = module.get<HttpService>(HttpService);
   });
 

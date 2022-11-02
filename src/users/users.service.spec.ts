@@ -9,7 +9,7 @@ import { ConfigService } from '@nestjs/config';
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { of } from 'rxjs';
-import { ServersService } from 'src/servers/servers.service';
+import { ChannelsService } from 'src/channels/channels.service';
 import { Repository } from 'typeorm';
 import {
   Relationship,
@@ -38,7 +38,7 @@ describe('UsersService', () => {
   let repositoryMock: Repository<User>;
   let relationshipsRepositoryMock: Repository<Relationship>;
   let gatewayMock;
-  let serversServiceMock: ServersService;
+  let channelsServiceMock: ChannelsService;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -56,7 +56,7 @@ describe('UsersService', () => {
           useValue: { findOne: () => Promise.resolve(userProfileDataMock) },
         },
         {
-          provide: ServersService,
+          provide: ChannelsService,
           useValue: { createPrivateChannel: jest.fn(() => Promise.resolve()) },
         },
         {
@@ -92,7 +92,7 @@ describe('UsersService', () => {
       getRepositoryToken(Relationship),
     );
     gatewayMock = module.get('GATEWAY');
-    serversServiceMock = module.get<ServersService>(ServersService);
+    channelsServiceMock = module.get<ChannelsService>(ChannelsService);
   });
 
   it('should be defined', () => {
@@ -207,6 +207,7 @@ describe('UsersService', () => {
       repositoryMock.findOne = jest.fn(() =>
         Promise.resolve({ ...user, profile_created: false }),
       );
+      service.findByUsername = jest.fn(() => Promise.resolve(null));
 
       const userData = { username: 'username', profilePictureKey: 'test.png' };
       const userId = 'userid';
@@ -377,7 +378,7 @@ describe('UsersService', () => {
         { status: RelationshipStatus.ACCEPTED },
       );
 
-      expect(serversServiceMock.createPrivateChannel).toHaveBeenCalled();
+      expect(channelsServiceMock.createPrivateChannel).toHaveBeenCalled();
       expect(relationshipsRepositoryMock.save).toHaveBeenCalled();
     });
   });

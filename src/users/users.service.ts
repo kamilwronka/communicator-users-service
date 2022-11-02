@@ -89,7 +89,18 @@ export class UsersService {
     { username, profilePictureKey }: CreateUserProfileDto,
     userId: string,
   ) {
+    const userByUsername = await this.findByUsername(username, false);
+
+    if (userByUsername) {
+      throw new BadRequestException();
+    }
+
     const user = await this.findById(userId);
+
+    if (user.profile_created) {
+      throw new BadRequestException('profile already created');
+    }
+
     if (profilePictureKey) {
       const { cdn } = this.configService.get<IServicesConfig>('services');
 
