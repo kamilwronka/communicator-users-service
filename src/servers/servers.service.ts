@@ -12,7 +12,7 @@ export class ServersService {
     const requestData = { type: 'PRIVATE', users };
 
     const { data } = await firstValueFrom(
-      this.httpService.post('/private/channels', requestData).pipe(
+      this.httpService.post('/', requestData).pipe(
         catchError((error: AxiosError) => {
           throw new BadGatewayException(error);
         }),
