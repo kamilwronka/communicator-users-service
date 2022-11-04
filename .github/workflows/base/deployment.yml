@@ -79,7 +79,7 @@ spec:
               valueFrom:
                 secretKeyRef:
                   name: aws
-                  key: aws-r2-bucket-name
+                  key: aws-s3-bucket-name
 
           livenessProbe:
             httpGet:
