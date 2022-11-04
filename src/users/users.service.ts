@@ -25,7 +25,7 @@ import { ChannelsService } from 'src/channels/channels.service';
 import { mapUserRelationships } from './helpers/mapUserRelationships.helper';
 import { formatUserId } from 'src/helpers/formatUserId.helper';
 import { ConfigService } from '@nestjs/config';
-import { ICloudflareConfig, IServicesConfig } from 'src/config/types';
+import { IAWSConfig, IServicesConfig } from 'src/config/types';
 import { UploadProfilePictureDto } from './dto/upload-profile-picture.dto';
 import { PutObjectCommand, S3Client } from '@aws-sdk/client-s3';
 import { generateFileUploadData } from './helpers/generateFileUploadData.helper';
@@ -114,11 +114,10 @@ export class UsersService {
   }
 
   async uploadProfilePicture(
-    { filename }: UploadProfilePictureDto,
+    { filename, fileSize }: UploadProfilePictureDto,
     userId: string,
   ) {
-    const { bucketName } =
-      this.configService.get<ICloudflareConfig>('cloudflare');
+    const { bucketName } = this.configService.get<IAWSConfig>('aws');
     const { key, mimeType } = generateFileUploadData(
       `users/${userId}`,
       filename,
@@ -130,6 +129,7 @@ export class UsersService {
         Bucket: bucketName,
         Key: key,
         ContentType: mimeType,
+        ContentLength: fileSize,
       }),
     );
 

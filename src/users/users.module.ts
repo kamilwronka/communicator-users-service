@@ -9,7 +9,7 @@ import { User } from './entities/user.entity';
 import { UsersController } from './users.controller';
 import { UsersService } from './users.service';
 import { ConfigService } from '@nestjs/config';
-import { ICloudflareConfig, IRabbitMqConfig } from 'src/config/types';
+import { IAWSConfig, IRabbitMqConfig } from 'src/config/types';
 import { ChannelsModule } from 'src/channels/channels.module';
 
 @Module({
@@ -42,14 +42,12 @@ import { ChannelsModule } from 'src/channels/channels.module';
       provide: S3Client,
       inject: [ConfigService],
       useFactory: async (configService: ConfigService) => {
-        const { accountId, apiKey, secret } =
-          configService.get<ICloudflareConfig>('cloudflare');
+        const { accessKeyId, secret } = configService.get<IAWSConfig>('aws');
 
         return new S3Client({
-          region: 'auto',
-          endpoint: `https://${accountId}.r2.cloudflarestorage.com`,
+          region: 'eu-central-1',
           credentials: {
-            accessKeyId: apiKey,
+            accessKeyId,
             secretAccessKey: secret,
           },
         });
