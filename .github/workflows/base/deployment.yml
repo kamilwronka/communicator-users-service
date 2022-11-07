@@ -36,11 +36,11 @@ spec:
             - name: CDN_URL
               valueFrom:
                 secretKeyRef:
-                  name: aws
-                  key: cdn-url
+                  name: cdn
+                  key: cdnUrl
             #postgres
             - name: POSTGRES_HOST
-              value: users-db-postgresql
+              value: users-database-postgresql
             - name: POSTGRES_PORT
               value: "5432"
             - name: POSTGRES_USERNAME
@@ -50,7 +50,7 @@ spec:
             - name: POSTGRES_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: users-db-postgresql
+                  name: users-database-postgresql
                   key: postgres-password
             # rabbitmq
             - name: RABBITMQ_HOST
