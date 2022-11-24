@@ -83,6 +83,7 @@ describe('UsersController', () => {
     it('should get user relationships', async () => {
       await usersController.createUserAccount({
         email: 'email@email.com',
+        username: 'user',
       });
 
       expect(usersServiceMock.createUserAccount).toHaveBeenCalled();
