@@ -1,19 +1,7 @@
-import { Type } from 'class-transformer';
-import { IsEmail, IsNotEmpty, IsString, ValidateNested } from 'class-validator';
+import { IsEmail, IsNotEmpty } from 'class-validator';
 
-class Auth0UserData {
-  @IsNotEmpty()
-  @IsString()
-  user_id: string;
-
+export class CreateUserDto {
   @IsEmail()
   @IsNotEmpty()
   email: string;
-}
-
-export class CreateUserDto {
-  @IsNotEmpty()
-  @ValidateNested()
-  @Type(() => Auth0UserData)
-  user: Auth0UserData;
 }

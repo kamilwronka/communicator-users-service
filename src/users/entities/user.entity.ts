@@ -1,17 +1,17 @@
 import {
   Entity,
   Column,
-  PrimaryColumn,
   CreateDateColumn,
   UpdateDateColumn,
   OneToMany,
+  PrimaryGeneratedColumn,
 } from 'typeorm';
 import { Relationship } from './relationship.entity';
 
 @Entity()
 export class User {
-  @PrimaryColumn({ unique: true })
-  user_id: string;
+  @PrimaryGeneratedColumn()
+  id: string;
 
   @Column({ unique: true })
   email: string;

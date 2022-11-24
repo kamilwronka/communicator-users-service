@@ -21,15 +21,15 @@ export const mapUserRelationships = (
       relationshipType = ERelationshipTypes.DECLINED;
     }
 
-    if (status === RelationshipStatus.PENDING && receiver.user_id === userId) {
+    if (status === RelationshipStatus.PENDING && receiver.id === userId) {
       relationshipType = ERelationshipTypes.RECEIVED_PENDING;
     }
 
-    if (status === RelationshipStatus.PENDING && receiver.user_id !== userId) {
+    if (status === RelationshipStatus.PENDING && receiver.id !== userId) {
       relationshipType = ERelationshipTypes.SENT_PENDING;
     }
 
-    if (receiver.user_id === userId) {
+    if (receiver.id === userId) {
       return {
         id: id,
         type: relationshipType,

@@ -1,5 +1,5 @@
 export const userProfileDataMock = {
-  user_id: '6359456d8eca9c6258cde0d6',
+  id: '6359456d8eca9c6258cde0d6',
   email: 'test@test.com',
   profile_created: true,
   username: 'TestUser',

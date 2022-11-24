@@ -10,7 +10,7 @@ describe('users', () => {
     describe('mapUserRelationships', () => {
       it('should return relationship list with correct statuses', () => {
         const result = mapUserRelationships(
-          userRelationshipsFromDbMock[0].creator.user_id,
+          userRelationshipsFromDbMock[0].creator.id,
           userRelationshipsFromDbMock as Relationship[],
         );
 

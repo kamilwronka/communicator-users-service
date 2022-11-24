@@ -142,7 +142,7 @@ describe('UsersService', () => {
 
       expect(
         service.createUserAccount({
-          user: { user_id: 'random', email: 'random@email.com' },
+          email: 'random@email.com',
         }),
       ).rejects.toThrow(UnprocessableEntityException);
       expect(repositoryMock.find).toHaveBeenCalled();
@@ -150,28 +150,23 @@ describe('UsersService', () => {
 
     it('creates user account', async () => {
       const user = {
-        user_id: 'auth0|userid',
         email: 'random@email.com',
       };
-      const transformedUserId = 'userid';
       repositoryMock.find = jest.fn(() => Promise.resolve([]));
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-expect-error
       repositoryMock.create = jest.fn(() =>
         Promise.resolve({
-          user_id: transformedUserId,
           email: user.email,
         }),
       );
 
-      const response = await service.createUserAccount({ user });
+      const response = await service.createUserAccount(user);
 
       expect(repositoryMock.create).toHaveBeenCalledWith({
-        user_id: transformedUserId,
         email: user.email,
       });
       expect(repositoryMock.save).toHaveBeenCalledWith({
-        user_id: transformedUserId,
         email: user.email,
       });
       expect(response).toEqual(userProfileDataMock);
@@ -277,7 +272,7 @@ describe('UsersService', () => {
       );
 
       expect(
-        service.createRelationship(userProfileDataMock.user_id, {
+        service.createRelationship(userProfileDataMock.id, {
           username: userProfileDataMock.username,
         }),
       ).rejects.toThrow(BadRequestException);
@@ -359,7 +354,7 @@ describe('UsersService', () => {
 
       expect(
         service.respondToRelationshipRequest(
-          userRelationshipsFromDbMock[0].receiver.user_id,
+          userRelationshipsFromDbMock[0].receiver.id,
           `${userRelationshipsFromDbMock[0].id}`,
           { status: RelationshipStatus.ACCEPTED },
         ),
@@ -373,7 +368,7 @@ describe('UsersService', () => {
       relationshipsRepositoryMock.save = jest.fn();
 
       await service.respondToRelationshipRequest(
-        userRelationshipsFromDbMock[0].receiver.user_id,
+        userRelationshipsFromDbMock[0].receiver.id,
         `${userRelationshipsFromDbMock[0].id}`,
         { status: RelationshipStatus.ACCEPTED },
       );

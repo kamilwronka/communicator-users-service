@@ -23,7 +23,6 @@ import { RespondToRelationshipInviteDto } from './dto/respond-to-relationship-in
 import { ClientProxy } from '@nestjs/microservices';
 import { ChannelsService } from 'src/channels/channels.service';
 import { mapUserRelationships } from './helpers/mapUserRelationships.helper';
-import { formatUserId } from 'src/helpers/formatUserId.helper';
 import { ConfigService } from '@nestjs/config';
 import { IAWSConfig, IServicesConfig } from 'src/config/types';
 import { UploadProfilePictureDto } from './dto/upload-profile-picture.dto';
@@ -45,7 +44,7 @@ export class UsersService {
   private readonly logger = new Logger(UsersService.name);
 
   async findById(userId: string) {
-    const user = await this.repo.findOne({ where: { user_id: userId } });
+    const user = await this.repo.findOne({ where: { id: userId } });
 
     if (!user) {
       throw new NotFoundException();
@@ -64,11 +63,9 @@ export class UsersService {
     return user;
   }
 
-  async createUserAccount({ user }: CreateUserDto) {
-    const transformedUserId = formatUserId(user.user_id);
-
+  async createUserAccount({ email }: CreateUserDto) {
     const currentUser = await this.repo.find({
-      where: [{ user_id: transformedUserId }, { email: user.email }],
+      where: [{ email: email }],
     });
 
     if (currentUser.length > 0) {
@@ -76,8 +73,7 @@ export class UsersService {
     }
 
     const newUser = await this.repo.create({
-      user_id: transformedUserId,
-      email: user.email,
+      email,
     });
 
     const createdUser = await this.repo.save(newUser);
@@ -162,10 +158,7 @@ export class UsersService {
 
   async getUserRelationships(userId: string) {
     const relationships = await this.relationshipRepo.find({
-      where: [
-        { creator: { user_id: userId } },
-        { receiver: { user_id: userId } },
-      ],
+      where: [{ creator: { id: userId } }, { receiver: { id: userId } }],
       relations: ['creator', 'receiver'],
     });
 
@@ -180,7 +173,7 @@ export class UsersService {
       createRelationshipInviteData.username,
     );
 
-    if (userId === invitedUser.user_id) {
+    if (userId === invitedUser.id) {
       throw new BadRequestException('You cant add yourself.');
     }
 
@@ -205,7 +198,7 @@ export class UsersService {
 
     this.gatewayClient
       .emit('relationship-requests', {
-        channelId: response.receiver.user_id,
+        channelId: response.receiver.id,
         message: {
           id: response.id,
           user: response.creator,
@@ -231,7 +224,7 @@ export class UsersService {
       throw new BadRequestException();
     }
 
-    if (userId !== relationship.receiver.user_id) {
+    if (userId !== relationship.receiver.id) {
       throw new ForbiddenException();
     }
 
