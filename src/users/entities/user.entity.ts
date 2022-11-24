@@ -19,7 +19,7 @@ export class User {
   @Column({ default: false })
   profile_created: boolean;
 
-  @Column({ unique: true })
+  @Column({ unique: true, nullable: true })
   username: string;
 
   @Column({ nullable: true })
