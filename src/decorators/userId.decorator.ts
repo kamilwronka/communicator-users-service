@@ -3,20 +3,22 @@ import {
   ExecutionContext,
   UnauthorizedException,
 } from '@nestjs/common';
+
+import { AUTH_NAMESPACE } from 'src/constants/auth-namespace.constant';
 import { decodeJwtPayload } from 'src/helpers/decodeJwtPayload.helper';
-import { formatUserId } from 'src/helpers/formatUserId.helper';
 
-export const UserId = createParamDecorator(
-  (data: unknown, ctx: ExecutionContext) => {
-    const request = ctx.switchToHttp().getRequest();
+export const UserId = createParamDecorator(function (
+  data: unknown,
+  ctx: ExecutionContext,
+) {
+  const request = ctx.switchToHttp().getRequest();
 
-    try {
-      const token = request.headers.authorization;
-      const parsedPayload = decodeJwtPayload(token);
+  try {
+    const token = request.headers.authorization;
+    const parsedPayload = decodeJwtPayload(token);
 
-      return formatUserId(parsedPayload.sub);
-    } catch (error) {
-      throw new UnauthorizedException();
-    }
-  },
-);
+    return parsedPayload[AUTH_NAMESPACE];
+  } catch (error) {
+    throw new UnauthorizedException();
+  }
+});
