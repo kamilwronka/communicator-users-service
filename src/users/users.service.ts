@@ -63,9 +63,9 @@ export class UsersService {
     return user;
   }
 
-  async createUserAccount({ email, username }: CreateUserDto) {
+  async createUserAccount({ user: { email } }: CreateUserDto) {
     const currentUser = await this.repo.find({
-      where: [{ email }, { username }],
+      where: [{ email }],
     });
 
     if (currentUser.length > 0) {
@@ -74,7 +74,6 @@ export class UsersService {
 
     const newUser = await this.repo.create({
       email,
-      username,
     });
 
     const createdUser = await this.repo.save(newUser);

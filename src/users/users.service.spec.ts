@@ -142,8 +142,9 @@ describe('UsersService', () => {
 
       expect(
         service.createUserAccount({
-          email: 'random@email.com',
-          username: 'user',
+          user: {
+            email: 'random@email.com',
+          },
         }),
       ).rejects.toThrow(UnprocessableEntityException);
       expect(repositoryMock.find).toHaveBeenCalled();
@@ -152,7 +153,6 @@ describe('UsersService', () => {
     it('creates user account', async () => {
       const user = {
         email: 'random@email.com',
-        username: 'test',
       };
       repositoryMock.find = jest.fn(() => Promise.resolve([]));
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
@@ -160,19 +160,16 @@ describe('UsersService', () => {
       repositoryMock.create = jest.fn(() =>
         Promise.resolve({
           email: user.email,
-          username: user.username,
         }),
       );
 
-      const response = await service.createUserAccount(user);
+      const response = await service.createUserAccount({ user });
 
       expect(repositoryMock.create).toHaveBeenCalledWith({
         email: user.email,
-        username: user.username,
       });
       expect(repositoryMock.save).toHaveBeenCalledWith({
         email: user.email,
-        username: user.username,
       });
       expect(response).toEqual(userProfileDataMock);
     });
