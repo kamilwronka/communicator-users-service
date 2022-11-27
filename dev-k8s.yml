@@ -2,7 +2,7 @@
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-  namespace: communicator-dev
+  namespace: dev
   name: users
   labels:
     account: users
@@ -11,7 +11,7 @@ metadata:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  namespace: communicator-dev
+  namespace: dev
   name: users
   labels:
     purpose: dev
@@ -43,7 +43,7 @@ spec:
               value: "4000"
             #postgres
             - name: POSTGRES_HOST
-              value: users-db-postgresql
+              value: postgres-postgresql
             - name: POSTGRES_PORT
               value: "5432"
             - name: POSTGRES_USERNAME
@@ -53,7 +53,7 @@ spec:
             - name: POSTGRES_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: users-db-postgresql
+                  name: postgres-postgresql
                   key: postgres-password
             # rabbitmq
             - name: RABBITMQ_HOST
@@ -72,7 +72,7 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  namespace: communicator-dev
+  namespace: dev
   name: users
   labels:
     app: users
@@ -93,9 +93,8 @@ apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: users-ingress
-  namespace: communicator-dev
+  namespace: dev
   annotations:
-    konghq.com/plugins: jwt,communicator-dev-cors
     konghq.com/strip-path: "true"
     konghq.com/preserve-host: "false"
 spec:
@@ -110,59 +109,3 @@ spec:
                 name: users
                 port:
                   number: 4000
----
-apiVersion: networking.istio.io/v1alpha3
-kind: VirtualService
-metadata:
-  namespace: communicator-dev
-  name: users
-spec:
-  hosts:
-    - users
-  http:
-    - route:
-        - destination:
-            host: users
-      # retries:
-      #   attempts: 3
-      #   perTryTimeout: 2s
-      #   retryOn: connect-failure,refused-stream,503
----
-apiVersion: networking.istio.io/v1alpha3
-kind: DestinationRule
-metadata:
-  namespace: communicator-dev
-  name: users
-spec:
-  host: users
-  trafficPolicy:
-    loadBalancer:
-      simple: ROUND_ROBIN
----
-apiVersion: security.istio.io/v1beta1
-kind: AuthorizationPolicy
-metadata:
-  name: deny-path-from-outside
-  namespace: communicator-dev
-spec:
-  selector:
-    matchLabels:
-      app: users
-  action: DENY
-  rules:
-    - from:
-        - source:
-            notPrincipals:
-              - "cluster.local/ns/communicator-dev/sa/auth-hooks"
-      to:
-        - operation:
-            paths: ["/users/create/account"]
-
-    - from:
-        - source:
-            notPrincipals:
-              - "cluster.local/ns/communicator-dev/sa/servers"
-              - "cluster.local/ns/communicator-dev/sa/channels"
-      to:
-        - operation:
-            paths: ["/users/data/*"]

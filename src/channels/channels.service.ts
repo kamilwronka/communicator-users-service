@@ -12,9 +12,7 @@ export class ChannelsService {
     const requestData = {
       type: 'PRIVATE',
       users: users.map((user) => ({
-        userId: user.id,
-        username: user.username,
-        profilePictureUrl: user.profile_picture_url,
+        id: user.id,
       })),
     };
 

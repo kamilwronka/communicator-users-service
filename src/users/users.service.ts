@@ -1,7 +1,4 @@
 import {
-  BadRequestException,
-  ForbiddenException,
-  Inject,
   Injectable,
   Logger,
   NotFoundException,
@@ -11,40 +8,15 @@ import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 
 import { User } from './entities/user.entity';
-import { CreateUserProfileDto } from './dto/create-user-profile.dto';
 import { CreateUserDto } from './dto/create-user-account.dto';
-import { CreateRelationshipInviteDto } from './dto/create-relationship-invite.dto';
-import {
-  Relationship,
-  RelationshipRequest,
-  RelationshipStatus,
-} from './entities/relationship.entity';
-import { RespondToRelationshipInviteDto } from './dto/respond-to-relationship-invite.dto';
-import { ClientProxy } from '@nestjs/microservices';
-import { ChannelsService } from 'src/channels/channels.service';
-import { mapUserRelationships } from './helpers/mapUserRelationships.helper';
-import { ConfigService } from '@nestjs/config';
-import { IAWSConfig, IServicesConfig } from 'src/config/types';
-import { UploadProfilePictureDto } from './dto/upload-profile-picture.dto';
-import { PutObjectCommand, S3Client } from '@aws-sdk/client-s3';
-import { generateFileUploadData } from './helpers/generateFileUploadData.helper';
-import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 
 @Injectable()
 export class UsersService {
-  constructor(
-    @InjectRepository(User) private repo: Repository<User>,
-    @InjectRepository(Relationship)
-    private relationshipRepo: Repository<Relationship>,
-    @Inject('GATEWAY') private gatewayClient: ClientProxy,
-    private readonly channelsService: ChannelsService,
-    private readonly configService: ConfigService,
-    private readonly s3Client: S3Client,
-  ) {}
+  constructor(@InjectRepository(User) private usersRepo: Repository<User>) {}
   private readonly logger = new Logger(UsersService.name);
 
   async findById(userId: string) {
-    const user = await this.repo.findOne({ where: { id: userId } });
+    const user = await this.usersRepo.findOne({ where: { id: userId } });
 
     if (!user) {
       throw new NotFoundException();
@@ -54,7 +26,7 @@ export class UsersService {
   }
 
   async findByUsername(username: string, throwOnFailure = true) {
-    const user = await this.repo.findOne({ where: { username } });
+    const user = await this.usersRepo.findOne({ where: { username } });
 
     if (!user && throwOnFailure) {
       throw new NotFoundException();
@@ -64,7 +36,7 @@ export class UsersService {
   }
 
   async createUserAccount({ user: { email } }: CreateUserDto) {
-    const currentUser = await this.repo.find({
+    const currentUser = await this.usersRepo.find({
       where: [{ email }],
     });
 
@@ -72,167 +44,12 @@ export class UsersService {
       throw new UnprocessableEntityException('Account already exists');
     }
 
-    const newUser = await this.repo.create({
+    const newUser = await this.usersRepo.create({
       email,
     });
 
-    const createdUser = await this.repo.save(newUser);
+    const createdUser = await this.usersRepo.save(newUser);
 
     return createdUser;
-  }
-
-  async createUserProfile(
-    { username, profilePictureKey }: CreateUserProfileDto,
-    userId: string,
-  ) {
-    const userByUsername = await this.findByUsername(username, false);
-
-    if (userByUsername) {
-      throw new BadRequestException();
-    }
-
-    const user = await this.findById(userId);
-
-    if (user.profile_created) {
-      throw new BadRequestException('profile already created');
-    }
-
-    if (profilePictureKey) {
-      const { cdn } = this.configService.get<IServicesConfig>('services');
-
-      user.profile_picture_url = `${cdn}/${profilePictureKey}`;
-    }
-
-    user.username = username;
-    user.profile_created = true;
-
-    return this.repo.save(user);
-  }
-
-  async uploadProfilePicture(
-    { filename, fileSize }: UploadProfilePictureDto,
-    userId: string,
-  ) {
-    const { bucketName } = this.configService.get<IAWSConfig>('aws');
-    const { key, mimeType } = generateFileUploadData(
-      `users/${userId}`,
-      filename,
-    );
-
-    const presignedUrl = await getSignedUrl(
-      this.s3Client,
-      new PutObjectCommand({
-        Bucket: bucketName,
-        Key: key,
-        ContentType: mimeType,
-        ContentLength: fileSize,
-      }),
-    );
-
-    return { uploadUrl: presignedUrl, key };
-  }
-
-  async findRelationshipById(relationshipId: string) {
-    const relationship = await this.relationshipRepo.findOne({
-      where: [{ id: parseInt(relationshipId, 10) }],
-      relations: ['creator', 'receiver'],
-    });
-
-    if (!relationship) {
-      throw new NotFoundException('No such relationship');
-    }
-
-    return relationship;
-  }
-
-  async findRelationshipByUsers(creator: User, receiver: User) {
-    const relationship = await this.relationshipRepo.findOne({
-      where: [
-        { creator, receiver },
-        { creator: receiver, receiver: creator },
-      ],
-    });
-
-    return relationship;
-  }
-
-  async getUserRelationships(userId: string) {
-    const relationships = await this.relationshipRepo.find({
-      where: [{ creator: { id: userId } }, { receiver: { id: userId } }],
-      relations: ['creator', 'receiver'],
-    });
-
-    return mapUserRelationships(userId, relationships);
-  }
-
-  async createRelationship(
-    userId: string,
-    createRelationshipInviteData: CreateRelationshipInviteDto,
-  ) {
-    const invitedUser = await this.findByUsername(
-      createRelationshipInviteData.username,
-    );
-
-    if (userId === invitedUser.id) {
-      throw new BadRequestException('You cant add yourself.');
-    }
-
-    const user = await this.findById(userId);
-
-    const existingRelationship = await this.findRelationshipByUsers(
-      user,
-      invitedUser,
-    );
-
-    if (existingRelationship) {
-      throw new UnprocessableEntityException('Already exists.');
-    }
-
-    const newRelationship: RelationshipRequest = {
-      creator: user,
-      receiver: invitedUser,
-      status: RelationshipStatus.PENDING,
-    };
-
-    const response = await this.relationshipRepo.save(newRelationship);
-
-    this.gatewayClient
-      .emit('relationship-requests', {
-        channelId: response.receiver.id,
-        message: {
-          id: response.id,
-          user: response.creator,
-        },
-      })
-      .subscribe();
-
-    return response;
-  }
-
-  async respondToRelationshipRequest(
-    userId: string,
-    relationshipId: string,
-    { status }: RespondToRelationshipInviteDto,
-  ) {
-    if (status === RelationshipStatus.PENDING) {
-      throw new BadRequestException();
-    }
-
-    const relationship = await this.findRelationshipById(relationshipId);
-
-    if (relationship.status !== RelationshipStatus.PENDING) {
-      throw new BadRequestException();
-    }
-
-    if (userId !== relationship.receiver.id) {
-      throw new ForbiddenException();
-    }
-
-    await this.channelsService.createPrivateChannel([
-      relationship.creator,
-      relationship.receiver,
-    ]);
-
-    return this.relationshipRepo.save({ ...relationship, status });
   }
 }

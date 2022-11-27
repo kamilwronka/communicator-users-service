@@ -28,7 +28,7 @@ jobs:
         with:
           node-version: 19.x
       - run: npm ci
-      - run: npm run test:cov
+      # - run: npm run test:cov
 
       - name: Create kubeconfig directory
         run: sudo mkdir -p /home/deploy

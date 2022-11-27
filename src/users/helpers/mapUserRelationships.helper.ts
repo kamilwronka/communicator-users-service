@@ -1,7 +1,7 @@
 import {
   Relationship,
   RelationshipStatus,
-} from '../entities/relationship.entity';
+} from '../relationships/entities/relationship.entity';
 import { ERelationshipTypes } from '../types';
 
 export const mapUserRelationships = (

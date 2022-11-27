@@ -8,6 +8,9 @@ build:
     - image: users
       docker:
         dockerfile: Dockerfile.dev
+      sync:
+        infer:
+          - "**.*.ts"
 deploy:
   kubectl:
     manifests:

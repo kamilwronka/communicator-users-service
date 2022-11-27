@@ -3,14 +3,17 @@ import { ClientsModule, Transport } from '@nestjs/microservices';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { S3Client } from '@aws-sdk/client-s3';
 
-import { Relationship } from './entities/relationship.entity';
-
 import { User } from './entities/user.entity';
 import { UsersController } from './users.controller';
 import { UsersService } from './users.service';
 import { ConfigService } from '@nestjs/config';
 import { IAWSConfig, IRabbitMqConfig } from 'src/config/types';
 import { ChannelsModule } from 'src/channels/channels.module';
+import { ProfileController } from './profile/profile.controller';
+import { ProfileService } from './profile/profile.service';
+import { Relationship } from './relationships/entities/relationship.entity';
+import { RelationshipsService } from './relationships/relationships.service';
+import { RelationshipsController } from './relationships/relationships.controller';
 
 @Module({
   imports: [
@@ -35,9 +38,11 @@ import { ChannelsModule } from 'src/channels/channels.module';
     ]),
     ChannelsModule,
   ],
-  controllers: [UsersController],
+  controllers: [UsersController, ProfileController, RelationshipsController],
   providers: [
     UsersService,
+    ProfileService,
+    RelationshipsService,
     {
       provide: S3Client,
       inject: [ConfigService],

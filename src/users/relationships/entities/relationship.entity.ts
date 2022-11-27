@@ -1,3 +1,4 @@
+import { User } from 'src/users/entities/user.entity';
 import {
   Entity,
   CreateDateColumn,
@@ -6,7 +7,6 @@ import {
   ManyToOne,
   Column,
 } from 'typeorm';
-import { User } from './user.entity';
 
 export enum RelationshipStatus {
   PENDING = 'pending',
@@ -14,16 +14,10 @@ export enum RelationshipStatus {
   DECLINED = 'declined',
 }
 
-export type RelationshipRequest = {
-  creator: User;
-  receiver: User;
-  status: RelationshipStatus;
-};
-
 @Entity()
 export class Relationship {
-  @PrimaryGeneratedColumn()
-  id: number;
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
 
   @ManyToOne(() => User, (user: User) => user.sent_relationship_requests)
   creator: User;
