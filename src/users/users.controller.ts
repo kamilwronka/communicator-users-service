@@ -28,7 +28,7 @@ export class UsersController {
   constructor(private usersService: UsersService) {}
 
   @UseInterceptors(ClassSerializerInterceptor)
-  @Get('')
+  @Get('me')
   @ApiOkResponse({
     type: User,
   })

@@ -10,7 +10,7 @@ import { RelationshipsService } from './relationships.service';
 
 @ApiTags('relationships')
 @ApiBearerAuth()
-@Controller('relationships')
+@Controller('me/relationships')
 export class RelationshipsController {
   constructor(private readonly relationshipsService: RelationshipsService) {}
 
