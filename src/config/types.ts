@@ -1,8 +1,4 @@
-export enum EEnvironment {
-  LOCAL = 'local',
-  DEV = 'dev',
-  PROD = 'prod',
-}
+import { RuntimeEnvironment } from 'src/types/common';
 
 export interface IPostgresConfig {
   host: string;
@@ -21,7 +17,7 @@ export interface IRabbitMqConfig {
 }
 
 export interface IAppConfig {
-  env: string;
+  env: RuntimeEnvironment;
   port: number;
   jsonSizeLimit: string;
 }

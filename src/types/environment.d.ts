@@ -1,10 +1,10 @@
-import { EEnvironment } from './config/types';
+import { RuntimeEnvironment } from './common';
 
 declare global {
   namespace NodeJS {
     interface ProcessEnv {
       PORT: number;
-      ENV: EEnvironment;
+      ENV: RuntimeEnvironment;
       POSTGRES_HOST: string;
       POSTGRES_PORT: number;
       POSTGRES_USERNAME: string;

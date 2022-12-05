@@ -11,9 +11,10 @@ import rabbitmqConfig from './config/rabbitmq.config';
 
 import { UsersModule } from './users/users.module';
 import { HealthController } from './health/health.controller';
-import { EEnvironment, IPostgresConfig } from './config/types';
+import { IPostgresConfig } from './config/types';
 import { ChannelsModule } from './channels/channels.module';
 import awsConfig from './config/aws.config';
+import { RuntimeEnvironment } from './types/common';
 
 @Module({
   imports: [
@@ -53,8 +54,13 @@ import awsConfig from './config/aws.config';
       cache: true,
       validationSchema: Joi.object({
         ENV: Joi.string()
-          .valid(EEnvironment.LOCAL, EEnvironment.DEV, EEnvironment.PROD)
-          .default(EEnvironment.LOCAL),
+          .valid(
+            RuntimeEnvironment.LOCAL,
+            RuntimeEnvironment.DEV,
+            RuntimeEnvironment.STAGING,
+            RuntimeEnvironment.PROD,
+          )
+          .default(RuntimeEnvironment.LOCAL),
         PORT: Joi.number(),
         POSTGRES_HOST: Joi.string(),
         POSTGRES_PORT: Joi.string(),
