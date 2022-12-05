@@ -1,7 +1,7 @@
 import { registerAs } from '@nestjs/config';
-import { IAppConfig } from './types';
+import { AppConfig } from './types';
 
-export default registerAs('app', (): IAppConfig => {
+export default registerAs('app', (): AppConfig => {
   const { ENV, PORT } = process.env;
 
   return {

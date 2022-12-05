@@ -6,23 +6,19 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
   OneToMany,
-  PrimaryGeneratedColumn,
+  PrimaryColumn,
 } from 'typeorm';
 import { Relationship } from '../relationships/entities/relationship.entity';
 
 @Entity()
 export class User {
   @ApiProperty()
-  @PrimaryGeneratedColumn('uuid')
+  @PrimaryColumn({ unique: true, nullable: false })
   id: string;
 
   @ApiProperty()
   @Column({ unique: true })
   email: string;
-
-  @ApiProperty()
-  @Column({ default: false })
-  profile_created: boolean;
 
   @ApiProperty()
   @Column({ unique: true, nullable: true })

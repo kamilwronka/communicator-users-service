@@ -8,12 +8,13 @@ import appConfig from './config/app.config';
 import postgresConfig from './config/postgres.config';
 import servicesConfig from './config/services.config';
 import rabbitmqConfig from './config/rabbitmq.config';
+import awsConfig from './config/aws.config';
 
 import { UsersModule } from './users/users.module';
 import { HealthController } from './health/health.controller';
-import { IPostgresConfig } from './config/types';
+import { PostgresConfig } from './config/types';
 import { ChannelsModule } from './channels/channels.module';
-import awsConfig from './config/aws.config';
+
 import { RuntimeEnvironment } from './types/common';
 
 @Module({
@@ -22,7 +23,7 @@ import { RuntimeEnvironment } from './types/common';
       inject: [ConfigService],
       useFactory: async (configService: ConfigService) => {
         const { host, port, username, password, database, synchronize } =
-          configService.get<IPostgresConfig>('postgres');
+          configService.get<PostgresConfig>('postgres');
 
         return {
           type: 'postgres',
@@ -70,7 +71,7 @@ import { RuntimeEnvironment } from './types/common';
         RABBITMQ_USER: Joi.string(),
         RABBITMQ_PASSWORD: Joi.string(),
         RABBITMQ_HOST: Joi.string(),
-        RABBITMQ_PORT: Joi.string(),
+        RABBITMQ_ACCESS_PORT: Joi.string(),
         AWS_ACCESS_KEY_ID: Joi.string(),
         AWS_SECRET_ACCESS_KEY: Joi.string(),
         AWS_S3_BUCKET_NAME: Joi.string(),

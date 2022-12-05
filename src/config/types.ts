@@ -1,6 +1,6 @@
 import { RuntimeEnvironment } from 'src/types/common';
 
-export interface IPostgresConfig {
+export interface PostgresConfig {
   host: string;
   port: number;
   username: string;
@@ -9,26 +9,26 @@ export interface IPostgresConfig {
   synchronize: boolean;
 }
 
-export interface IRabbitMqConfig {
+export interface RabbitMqConfig {
   host: string;
   port: string;
   password: string;
   user: string;
 }
 
-export interface IAppConfig {
+export interface AppConfig {
   env: RuntimeEnvironment;
   port: number;
   jsonSizeLimit: string;
 }
 
-export interface IServicesConfig {
+export interface ServicesConfig {
   servers: string;
   channels: string;
   cdn: string;
 }
 
-export interface IAWSConfig {
+export interface AWSConfig {
   accessKeyId: string;
   secret: string;
   bucketName: string;

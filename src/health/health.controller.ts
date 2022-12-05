@@ -5,7 +5,7 @@ import {
   HealthCheck,
   TypeOrmHealthIndicator,
 } from '@nestjs/terminus';
-import { IPostgresConfig } from 'src/config/types';
+import { PostgresConfig } from 'src/config/types';
 
 @Controller('healthz')
 export class HealthController {
@@ -18,7 +18,7 @@ export class HealthController {
   @Get()
   @HealthCheck()
   check() {
-    const { database } = this.configService.get<IPostgresConfig>('postgres');
+    const { database } = this.configService.get<PostgresConfig>('postgres');
 
     return this.health.check([() => this.db.pingCheck(database)]);
   }

@@ -9,13 +9,18 @@ import { InjectRepository } from '@nestjs/typeorm';
 
 import { User } from './entities/user.entity';
 import { CreateUserDto } from './dto/create-user-account.dto';
+import { AmqpConnection } from '@golevelup/nestjs-rabbitmq';
+import { nanoid } from 'nanoid';
 
 @Injectable()
 export class UsersService {
-  constructor(@InjectRepository(User) private usersRepo: Repository<User>) {}
+  constructor(
+    @InjectRepository(User) private usersRepo: Repository<User>,
+    private readonly amqpConnection: AmqpConnection,
+  ) {}
   private readonly logger = new Logger(UsersService.name);
 
-  async findById(userId: string) {
+  async findById(userId: string): Promise<User> {
     const user = await this.usersRepo.findOne({ where: { id: userId } });
 
     if (!user) {
@@ -46,9 +51,12 @@ export class UsersService {
 
     const newUser = await this.usersRepo.create({
       email,
+      id: nanoid(),
     });
 
     const createdUser = await this.usersRepo.save(newUser);
+
+    this.amqpConnection.publish('default', 'users.create', createdUser);
 
     return createdUser;
   }

@@ -7,11 +7,12 @@ import {
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
-import { IAWSConfig, IServicesConfig } from 'src/config/types';
+import { AmqpConnection } from '@golevelup/nestjs-rabbitmq';
+
+import { AWSConfig, ServicesConfig } from 'src/config/types';
 import { Repository } from 'typeorm';
 import { User } from '../entities/user.entity';
 import { generateFileUploadData } from '../helpers/generateFileUploadData.helper';
-import { Relationship } from '../relationships/entities/relationship.entity';
 import { UsersService } from '../users.service';
 import { CreateProfileDto } from './dto/create-profile.dto';
 import { UpdateProfileDto } from './dto/update-profile.dto';
@@ -22,10 +23,9 @@ export class ProfileService {
   constructor(
     private readonly usersService: UsersService,
     private readonly configService: ConfigService,
-    @InjectRepository(Relationship)
-    private relationshipRepo: Repository<Relationship>,
     @InjectRepository(User) private usersRepo: Repository<User>,
     private readonly s3Client: S3Client,
+    private readonly amqpConnection: AmqpConnection,
   ) {}
 
   async create(userId: string, { username, avatar }: CreateProfileDto) {
@@ -40,20 +40,23 @@ export class ProfileService {
 
     const user = await this.usersService.findById(userId);
 
-    if (user.profile_created) {
+    if (user.username) {
       throw new BadRequestException('profile already created');
     }
 
     if (avatar) {
-      const { cdn } = this.configService.get<IServicesConfig>('services');
+      const { cdn } = this.configService.get<ServicesConfig>('services');
 
       user.avatar = `${cdn}/${avatar}`;
     }
 
     user.username = username;
-    user.profile_created = true;
 
-    return this.usersRepo.save(user);
+    const updatedUser = await this.usersRepo.save(user);
+
+    this.amqpConnection.publish('default', 'users.update', updatedUser);
+
+    return updatedUser;
   }
 
   async update(userId: string, data: UpdateProfileDto) {
@@ -63,11 +66,15 @@ export class ProfileService {
       user[key] = value;
     });
 
-    return this.usersRepo.save(user);
+    const updatedUser = await this.usersRepo.save(user);
+
+    this.amqpConnection.publish('default', 'users.update', updatedUser);
+
+    return updatedUser;
   }
 
   async uploadAvatar(userId: string, { filename, size }: UploadAvatarDto) {
-    const { bucketName } = this.configService.get<IAWSConfig>('aws');
+    const { bucketName } = this.configService.get<AWSConfig>('aws');
     const { key, mimeType } = generateFileUploadData(
       `users/${userId}`,
       filename,

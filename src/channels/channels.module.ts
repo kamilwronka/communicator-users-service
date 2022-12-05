@@ -1,7 +1,7 @@
 import { HttpModule } from '@nestjs/axios';
 import { Module } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { IServicesConfig } from 'src/config/types';
+import { ServicesConfig } from 'src/config/types';
 import { ChannelsService } from './channels.service';
 
 @Module({
@@ -9,7 +9,7 @@ import { ChannelsService } from './channels.service';
     HttpModule.registerAsync({
       inject: [ConfigService],
       useFactory: async (configService: ConfigService) => {
-        const { channels } = configService.get<IServicesConfig>('services');
+        const { channels } = configService.get<ServicesConfig>('services');
 
         return {
           baseURL: channels,

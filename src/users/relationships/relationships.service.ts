@@ -1,12 +1,10 @@
 import {
   BadRequestException,
   ForbiddenException,
-  Inject,
   Injectable,
   NotFoundException,
   UnprocessableEntityException,
 } from '@nestjs/common';
-import { ClientProxy } from '@nestjs/microservices';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ChannelsService } from 'src/channels/channels.service';
 import { Repository } from 'typeorm';
@@ -27,7 +25,6 @@ export class RelationshipsService {
     private relationshipRepo: Repository<Relationship>,
     private readonly channelsService: ChannelsService,
     private readonly usersService: UsersService,
-    @Inject('GATEWAY') private gatewayClient: ClientProxy,
   ) {}
 
   async findRelationshipById(relationshipId: string) {
@@ -94,16 +91,6 @@ export class RelationshipsService {
     };
 
     const response = await this.relationshipRepo.save(newRelationship);
-
-    this.gatewayClient
-      .emit('relationship-requests', {
-        channelId: response.receiver.id,
-        message: {
-          id: response.id,
-          user: response.creator,
-        },
-      })
-      .subscribe();
 
     return response;
   }

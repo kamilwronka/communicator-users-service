@@ -1,13 +1,13 @@
 import { registerAs } from '@nestjs/config';
-import { IServicesConfig } from './types';
+import { ServicesConfig } from './types';
 
-export default registerAs('services', (): IServicesConfig => {
+export default registerAs('services', (): ServicesConfig => {
   const { ENV, CDN_URL } = process.env;
 
   const isLocal = ENV === 'local';
   const mockSvcUrl = 'http://mockserver.mockserver:1080';
 
-  let config: IServicesConfig;
+  let config: ServicesConfig;
 
   if (isLocal) {
     config = {

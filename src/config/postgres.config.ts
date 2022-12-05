@@ -1,7 +1,7 @@
 import { registerAs } from '@nestjs/config';
-import { IPostgresConfig } from './types';
+import { PostgresConfig } from './types';
 
-export default registerAs('postgres', (): IPostgresConfig => {
+export default registerAs('postgres', (): PostgresConfig => {
   const {
     POSTGRES_HOST,
     POSTGRES_PORT,

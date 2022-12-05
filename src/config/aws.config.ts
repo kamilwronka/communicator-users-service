@@ -1,7 +1,7 @@
 import { registerAs } from '@nestjs/config';
-import { IAWSConfig } from './types';
+import { AWSConfig } from './types';
 
-export default registerAs('aws', (): IAWSConfig => {
+export default registerAs('aws', (): AWSConfig => {
   const { AWS_ACCESS_KEY_ID, AWS_S3_BUCKET_NAME, AWS_SECRET_ACCESS_KEY } =
     process.env;
 
