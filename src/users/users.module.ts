@@ -1,13 +1,13 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { S3Client } from '@aws-sdk/client-s3';
-import { RabbitMQModule } from '@golevelup/nestjs-rabbitmq';
+import { RabbitMQConfig, RabbitMQModule } from '@golevelup/nestjs-rabbitmq';
 
 import { User } from './entities/user.entity';
 import { UsersController } from './users.controller';
 import { UsersService } from './users.service';
 import { ConfigService } from '@nestjs/config';
-import { AWSConfig, RabbitMqConfig } from 'src/config/types';
+import { AWSConfig } from 'src/config/types';
 import { ChannelsModule } from 'src/channels/channels.module';
 import { ProfileController } from './profile/profile.controller';
 import { ProfileService } from './profile/profile.service';
@@ -22,25 +22,9 @@ import { RelationshipsController } from './relationships/relationships.controlle
     RabbitMQModule.forRootAsync(RabbitMQModule, {
       inject: [ConfigService],
       useFactory: async (configService: ConfigService) => {
-        const { user, password, host, port } =
-          configService.get<RabbitMqConfig>('rabbitmq');
+        const config = configService.get<RabbitMQConfig>('rabbitmq');
 
-        return {
-          exchanges: [
-            {
-              name: 'default',
-              type: 'topic',
-            },
-          ],
-          channels: {
-            default: {
-              prefetchCount: 1,
-              default: true,
-            },
-          },
-          uri: `amqp://${user}:${password}@${host}:${port}`,
-          connectionInitOptions: { wait: false },
-        };
+        return config;
       },
     }),
   ],

@@ -1,7 +1,7 @@
+import { RabbitMQConfig } from '@golevelup/nestjs-rabbitmq';
 import { registerAs } from '@nestjs/config';
-import { RabbitMqConfig } from './types';
 
-export default registerAs('rabbitmq', (): RabbitMqConfig => {
+export default registerAs('rabbitmq', (): RabbitMQConfig => {
   const {
     RABBITMQ_USER,
     RABBITMQ_PASSWORD,
@@ -10,9 +10,18 @@ export default registerAs('rabbitmq', (): RabbitMqConfig => {
   } = process.env;
 
   return {
-    host: RABBITMQ_HOST,
-    port: RABBITMQ_ACCESS_PORT,
-    password: RABBITMQ_PASSWORD,
-    user: RABBITMQ_USER,
+    uri: `amqp://${RABBITMQ_USER}:${RABBITMQ_PASSWORD}@${RABBITMQ_HOST}:${RABBITMQ_ACCESS_PORT}`,
+    exchanges: [
+      {
+        name: 'default',
+        type: 'topic',
+      },
+    ],
+    channels: {
+      default: {
+        prefetchCount: 1,
+        default: true,
+      },
+    },
   };
 });
