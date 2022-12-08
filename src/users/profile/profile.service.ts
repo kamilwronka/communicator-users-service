@@ -17,10 +17,7 @@ import { UsersService } from '../users.service';
 import { CreateProfileDto } from './dto/create-profile.dto';
 import { UpdateProfileDto } from './dto/update-profile.dto';
 import { UploadAvatarDto } from './dto/upload-avatar.dto';
-
-enum RoutingKey {
-  USERS_UPDATE = 'users.update',
-}
+import { RoutingKeys } from '../../enums/routing-keys.enum';
 
 @Injectable()
 export class ProfileService {
@@ -58,7 +55,7 @@ export class ProfileService {
 
     this.amqpConnection.publish(
       'default',
-      RoutingKey.USERS_UPDATE,
+      RoutingKeys.USER_UPDATE,
       updatedUser,
     );
 
@@ -76,7 +73,7 @@ export class ProfileService {
 
     this.amqpConnection.publish(
       'default',
-      RoutingKey.USERS_UPDATE,
+      RoutingKeys.USER_UPDATE,
       updatedUser,
     );
 
