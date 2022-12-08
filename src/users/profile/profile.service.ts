@@ -9,7 +9,7 @@ import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import { AmqpConnection } from '@golevelup/nestjs-rabbitmq';
 
-import { AWSConfig, ServicesConfig } from 'src/config/types';
+import { AWSConfig } from 'src/config/types';
 import { Repository } from 'typeorm';
 import { User } from '../entities/user.entity';
 import { generateFileUploadData } from '../helpers/generateFileUploadData.helper';
@@ -17,6 +17,10 @@ import { UsersService } from '../users.service';
 import { CreateProfileDto } from './dto/create-profile.dto';
 import { UpdateProfileDto } from './dto/update-profile.dto';
 import { UploadAvatarDto } from './dto/upload-avatar.dto';
+
+enum RoutingKey {
+  USERS_UPDATE = 'users.update',
+}
 
 @Injectable()
 export class ProfileService {
@@ -45,16 +49,18 @@ export class ProfileService {
     }
 
     if (avatar) {
-      const { cdn } = this.configService.get<ServicesConfig>('services');
-
-      user.avatar = `${cdn}/${avatar}`;
+      user.avatar = avatar;
     }
 
     user.username = username;
 
     const updatedUser = await this.usersRepo.save(user);
 
-    this.amqpConnection.publish('default', 'users.update', updatedUser);
+    this.amqpConnection.publish(
+      'default',
+      RoutingKey.USERS_UPDATE,
+      updatedUser,
+    );
 
     return updatedUser;
   }
@@ -68,7 +74,11 @@ export class ProfileService {
 
     const updatedUser = await this.usersRepo.save(user);
 
-    this.amqpConnection.publish('default', 'users.update', updatedUser);
+    this.amqpConnection.publish(
+      'default',
+      RoutingKey.USERS_UPDATE,
+      updatedUser,
+    );
 
     return updatedUser;
   }

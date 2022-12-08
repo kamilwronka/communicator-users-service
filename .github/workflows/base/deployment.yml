@@ -33,11 +33,6 @@ spec:
               value: dev
             - name: PORT
               value: "4000"
-            - name: CDN_URL
-              valueFrom:
-                secretKeyRef:
-                  name: cdn
-                  key: cdnUrl
             #postgres
             - name: POSTGRES_HOST
               value: users-database-postgresql

@@ -14,10 +14,13 @@ import { ProfileService } from './profile/profile.service';
 import { Relationship } from './relationships/entities/relationship.entity';
 import { RelationshipsService } from './relationships/relationships.service';
 import { RelationshipsController } from './relationships/relationships.controller';
+import { ServersService } from './servers/servers.service';
+import { ServersController } from './servers/servers.controller';
+import { Server } from './servers/entities/server.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([User, Relationship]),
+    TypeOrmModule.forFeature([User, Relationship, Server]),
     ChannelsModule,
     RabbitMQModule.forRootAsync(RabbitMQModule, {
       inject: [ConfigService],
@@ -28,7 +31,12 @@ import { RelationshipsController } from './relationships/relationships.controlle
       },
     }),
   ],
-  controllers: [UsersController, ProfileController, RelationshipsController],
+  controllers: [
+    UsersController,
+    ProfileController,
+    RelationshipsController,
+    ServersController,
+  ],
   providers: [
     UsersService,
     ProfileService,
@@ -48,6 +56,7 @@ import { RelationshipsController } from './relationships/relationships.controlle
         });
       },
     },
+    ServersService,
   ],
   exports: [UsersService],
 })

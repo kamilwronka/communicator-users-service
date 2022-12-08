@@ -7,8 +7,11 @@ import {
   UpdateDateColumn,
   OneToMany,
   PrimaryColumn,
+  ManyToMany,
+  JoinTable,
 } from 'typeorm';
 import { Relationship } from '../relationships/entities/relationship.entity';
+import { Server } from '../servers/entities/server.entity';
 
 @Entity()
 export class User {
@@ -53,6 +56,10 @@ export class User {
     (relationsip: Relationship) => relationsip.receiver,
   )
   received_relationship_requests: Relationship[];
+
+  @ManyToMany(() => Server, { cascade: true })
+  @JoinTable()
+  servers: Server[];
 
   constructor(partial: Partial<User>) {
     Object.assign(this, partial);

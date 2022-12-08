@@ -25,7 +25,6 @@ export interface AppConfig {
 export interface ServicesConfig {
   servers: string;
   channels: string;
-  cdn: string;
 }
 
 export interface AWSConfig {

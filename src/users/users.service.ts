@@ -12,6 +12,10 @@ import { CreateUserDto } from './dto/create-user-account.dto';
 import { AmqpConnection } from '@golevelup/nestjs-rabbitmq';
 import { nanoid } from 'nanoid';
 
+enum RoutingKey {
+  USERS_CREATE = 'users.create',
+}
+
 @Injectable()
 export class UsersService {
   constructor(
@@ -56,7 +60,11 @@ export class UsersService {
 
     const createdUser = await this.usersRepo.save(newUser);
 
-    this.amqpConnection.publish('default', 'users.create', createdUser);
+    this.amqpConnection.publish(
+      'default',
+      RoutingKey.USERS_CREATE,
+      createdUser,
+    );
 
     return createdUser;
   }
