@@ -13,7 +13,6 @@ import awsConfig from './config/aws.config';
 import { UsersModule } from './users/users.module';
 import { HealthController } from './health/health.controller';
 import { PostgresConfig } from './config/types';
-import { ChannelsModule } from './channels/channels.module';
 
 import { RuntimeEnvironment } from './types/common';
 
@@ -83,7 +82,6 @@ import { RuntimeEnvironment } from './types/common';
     }),
     UsersModule,
     TerminusModule,
-    ChannelsModule,
   ],
   controllers: [HealthController],
   providers: [],

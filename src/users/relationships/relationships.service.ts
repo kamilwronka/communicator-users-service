@@ -6,7 +6,7 @@ import {
   UnprocessableEntityException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { ChannelsService } from 'src/channels/channels.service';
+import { ChannelsService } from 'src/users/channels/channels.service';
 import { Repository } from 'typeorm';
 import { User } from '../entities/user.entity';
 import { mapUserRelationships } from '../helpers/mapUserRelationships.helper';
@@ -114,9 +114,9 @@ export class RelationshipsService {
       throw new ForbiddenException();
     }
 
-    await this.channelsService.createPrivateChannel([
-      relationship.creator,
-      relationship.receiver,
+    await this.channelsService.createPrivateChannel(undefined, [
+      relationship.creator.id,
+      relationship.receiver.id,
     ]);
 
     return this.relationshipRepo.save({ ...relationship, status });

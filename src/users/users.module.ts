@@ -8,7 +8,6 @@ import { UsersController } from './users.controller';
 import { UsersService } from './users.service';
 import { ConfigService } from '@nestjs/config';
 import { AWSConfig } from 'src/config/types';
-import { ChannelsModule } from 'src/channels/channels.module';
 import { ProfileController } from './profile/profile.controller';
 import { ProfileService } from './profile/profile.service';
 import { Relationship } from './relationships/entities/relationship.entity';
@@ -16,12 +15,13 @@ import { RelationshipsService } from './relationships/relationships.service';
 import { RelationshipsController } from './relationships/relationships.controller';
 import { ServersService } from './servers/servers.service';
 import { ServersController } from './servers/servers.controller';
-import { Server } from './servers/entities/server.entity';
+import { HttpModule } from '@nestjs/axios';
+import { ChannelsService } from './channels/channels.service';
+import { ChannelsController } from './channels/channels.controller';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([User, Relationship, Server]),
-    ChannelsModule,
+    TypeOrmModule.forFeature([User, Relationship]),
     RabbitMQModule.forRootAsync(RabbitMQModule, {
       inject: [ConfigService],
       useFactory: async (configService: ConfigService) => {
@@ -30,17 +30,29 @@ import { Server } from './servers/entities/server.entity';
         return config;
       },
     }),
+    HttpModule.registerAsync({
+      inject: [ConfigService],
+      useFactory: () => {
+        return {
+          maxRedirects: 5,
+          timeout: 5000,
+        };
+      },
+    }),
   ],
   controllers: [
     UsersController,
     ProfileController,
     RelationshipsController,
     ServersController,
+    ChannelsController,
   ],
   providers: [
     UsersService,
     ProfileService,
     RelationshipsService,
+    ServersService,
+    ChannelsService,
     {
       provide: S3Client,
       inject: [ConfigService],
@@ -56,7 +68,6 @@ import { Server } from './servers/entities/server.entity';
         });
       },
     },
-    ServersService,
   ],
   exports: [UsersService],
 })

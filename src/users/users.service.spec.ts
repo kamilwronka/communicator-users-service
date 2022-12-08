@@ -9,7 +9,7 @@ import { ConfigService } from '@nestjs/config';
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { of } from 'rxjs';
-import { ChannelsService } from 'src/channels/channels.service';
+import { ChannelsService } from 'src/users/channels/channels.service';
 import { Repository } from 'typeorm';
 import {
   Relationship,
