@@ -2,16 +2,12 @@ apiVersion: skaffold/v2beta28
 kind: Config
 build:
   local:
-    concurrency: 0
+    concurrency: 1
     push: false
   artifacts:
     - image: users
       docker:
         dockerfile: Dockerfile.dev
-      sync:
-        infer:
-          - "**.*.ts"
-deploy:
-  kubectl:
-    manifests:
-      - "./dev-k8s.yml"
+manifests:
+  rawYaml:
+    - "./dev-k8s.yml"

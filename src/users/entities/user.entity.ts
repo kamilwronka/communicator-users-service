@@ -7,6 +7,7 @@ import {
   UpdateDateColumn,
   OneToMany,
   PrimaryColumn,
+  VersionColumn,
 } from 'typeorm';
 import { Relationship } from '../relationships/entities/relationship.entity';
 
@@ -53,6 +54,10 @@ export class User {
     (relationsip: Relationship) => relationsip.receiver,
   )
   received_relationship_requests: Relationship[];
+
+  @Exclude()
+  @VersionColumn()
+  version: number;
 
   constructor(partial: Partial<User>) {
     Object.assign(this, partial);

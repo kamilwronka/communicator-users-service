@@ -8,6 +8,7 @@ import {
 import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import { AmqpConnection } from '@golevelup/nestjs-rabbitmq';
+import * as equal from 'deep-equal';
 
 import { AWSConfig } from 'src/config/types';
 import { Repository } from 'typeorm';
@@ -65,19 +66,33 @@ export class ProfileService {
   async update(userId: string, data: UpdateProfileDto) {
     const user = await this.usersService.findById(userId);
 
-    Object.entries(data).map(([key, value]) => {
-      user[key] = value;
-    });
-
-    const updatedUser = await this.usersRepo.save(user);
-
-    this.amqpConnection.publish(
-      'default',
-      RoutingKeys.USER_UPDATE,
-      updatedUser,
+    const hasChanged = !equal(
+      {
+        avatar: user.avatar,
+        description: user.description,
+      },
+      { ...data },
+      { strict: true },
     );
 
-    return updatedUser;
+    if (hasChanged) {
+      Object.entries(data).map(([key, value]) => {
+        user[key] = value;
+      });
+
+      const updatedUser = await this.usersRepo.save(user);
+
+      this.amqpConnection.publish(
+        'default',
+        RoutingKeys.USER_UPDATE,
+        updatedUser,
+        { expiration: 5000, deliveryMode: 2 },
+      );
+
+      return updatedUser;
+    }
+
+    return user;
   }
 
   async uploadAvatar(userId: string, { filename, size }: UploadAvatarDto) {
