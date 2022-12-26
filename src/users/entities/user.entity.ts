@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Exclude } from 'class-transformer';
+import { createHash } from 'crypto'
 import {
   Entity,
   Column,
@@ -8,6 +9,8 @@ import {
   OneToMany,
   PrimaryColumn,
   VersionColumn,
+  BeforeInsert,
+  BeforeUpdate,
 } from 'typeorm';
 import { Relationship } from '../relationships/entities/relationship.entity';
 
@@ -58,6 +61,17 @@ export class User {
   @Exclude()
   @VersionColumn()
   version: number;
+
+  @Exclude()
+  @Column({ nullable: false, unique: true })
+  version_hash: string;
+
+  @BeforeInsert()
+  @BeforeUpdate()
+  private generateVersionHash(): void {
+    const { received_relationship_requests, sent_relationship_requests, version_hash, generateVersionHash, ...rest } = this;
+    this.version_hash = createHash('sha256').update(JSON.stringify(rest)).digest('hex');
+  }
 
   constructor(partial: Partial<User>) {
     Object.assign(this, partial);

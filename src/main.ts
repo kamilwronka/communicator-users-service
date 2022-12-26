@@ -34,7 +34,7 @@ async function bootstrap() {
     await configureMockserver();
   }
 
-  Logger.log(`Starting application on port ${port}...`);
+  Logger.log(`Starting application on port ${port}.`);
 
   app.useGlobalPipes(new ValidationPipe({ whitelist: true }));
   await app.listen(port);
