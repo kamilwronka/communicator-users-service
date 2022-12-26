@@ -12,6 +12,7 @@ import { CreateUserDto } from './dto/create-user-account.dto';
 import { AmqpConnection } from '@golevelup/nestjs-rabbitmq';
 import { nanoid } from 'nanoid';
 import { RoutingKeys } from '../enums/routing-keys.enum';
+import { DEFAULT_EXCHANGE_NAME } from 'src/config/rabbitmq.config';
 
 @Injectable()
 export class UsersService {
@@ -58,7 +59,7 @@ export class UsersService {
     const createdUser = await this.usersRepo.save(newUser);
 
     this.amqpConnection.publish(
-      'default',
+      DEFAULT_EXCHANGE_NAME,
       RoutingKeys.USER_CREATE,
       createdUser,
     );

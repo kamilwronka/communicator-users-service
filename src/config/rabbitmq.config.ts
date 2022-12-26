@@ -1,6 +1,8 @@
 import { RabbitMQConfig } from '@golevelup/nestjs-rabbitmq';
 import { registerAs } from '@nestjs/config';
 
+export const DEFAULT_EXCHANGE_NAME = 'default';
+
 export default registerAs('rabbitmq', (): RabbitMQConfig => {
   const {
     RABBITMQ_USER,
@@ -13,7 +15,7 @@ export default registerAs('rabbitmq', (): RabbitMQConfig => {
     uri: `amqp://${RABBITMQ_USER}:${RABBITMQ_PASSWORD}@${RABBITMQ_HOST}:${RABBITMQ_ACCESS_PORT}`,
     exchanges: [
       {
-        name: 'default',
+        name: DEFAULT_EXCHANGE_NAME,
         type: 'topic',
       },
     ],

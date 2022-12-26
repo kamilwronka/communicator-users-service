@@ -19,6 +19,7 @@ import { CreateProfileDto } from './dto/create-profile.dto';
 import { UpdateProfileDto } from './dto/update-profile.dto';
 import { UploadAvatarDto } from './dto/upload-avatar.dto';
 import { RoutingKeys } from '../../enums/routing-keys.enum';
+import { DEFAULT_EXCHANGE_NAME } from 'src/config/rabbitmq.config';
 
 @Injectable()
 export class ProfileService {
@@ -28,7 +29,7 @@ export class ProfileService {
     @InjectRepository(User) private usersRepo: Repository<User>,
     private readonly s3Client: S3Client,
     private readonly amqpConnection: AmqpConnection,
-  ) {}
+  ) { }
 
   async create(userId: string, { username, avatar }: CreateProfileDto) {
     const userByUsername = await this.usersService.findByUsername(
@@ -55,7 +56,7 @@ export class ProfileService {
     const updatedUser = await this.usersRepo.save(user);
 
     this.amqpConnection.publish(
-      'default',
+      DEFAULT_EXCHANGE_NAME,
       RoutingKeys.USER_UPDATE,
       updatedUser,
     );
@@ -83,10 +84,10 @@ export class ProfileService {
       const updatedUser = await this.usersRepo.save(user);
 
       this.amqpConnection.publish(
-        'default',
+        DEFAULT_EXCHANGE_NAME,
         RoutingKeys.USER_UPDATE,
         updatedUser,
-        { expiration: 5000, deliveryMode: 2 },
+        { deliveryMode: 2 },
       );
 
       return updatedUser;
