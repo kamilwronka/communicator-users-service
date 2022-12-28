@@ -6,14 +6,12 @@ import { json } from 'express';
 
 import { AppModule } from './app.module';
 import { AppConfig } from './config/types';
-import { RuntimeEnvironment } from './types/common';
-import { configureMockserver } from './users/__mocks__/configure-mockserver';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, { cors: true });
   const configService = app.get(ConfigService);
 
-  const { port, jsonSizeLimit, env } = configService.get<AppConfig>('app', {
+  const { port, jsonSizeLimit } = configService.get<AppConfig>('app', {
     infer: true,
   });
 
@@ -29,10 +27,6 @@ async function bootstrap() {
 
   const document = SwaggerModule.createDocument(app, swaggerConfig);
   SwaggerModule.setup('docs', app, document);
-
-  if (env === RuntimeEnvironment.LOCAL) {
-    await configureMockserver();
-  }
 
   Logger.log(`Starting application on port ${port}...`);
 
