@@ -16,7 +16,7 @@ import {
   RelationshipStatus,
 } from './entities/relationship.entity';
 import { User } from './entities/user.entity';
-import { mapUserRelationships } from './helpers/mapUserRelationships.helper';
+import { mapUserRelationships } from './relationships/helpers/mapUserRelationships.helper';
 import { UsersService } from './users.service';
 import { userProfileDataMock } from './__mocks__/userProfileData.mock';
 import { userRelationshipsFromDbMock } from './__mocks__/userRelationships.mock';

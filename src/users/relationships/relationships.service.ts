@@ -1,3 +1,4 @@
+import { AmqpConnection } from '@golevelup/nestjs-rabbitmq';
 import {
   BadRequestException,
   ForbiddenException,
@@ -6,10 +7,12 @@ import {
   UnprocessableEntityException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { nanoid } from 'nanoid';
 import { ChannelsService } from 'src/users/channels/channels.service';
 import { Repository } from 'typeorm';
+import { DEFAULT_EXCHANGE_NAME } from '../../config/rabbitmq.config';
 import { User } from '../entities/user.entity';
-import { mapUserRelationships } from '../helpers/mapUserRelationships.helper';
+import { mapUserRelationships } from './helpers/mapUserRelationships.helper';
 import { UsersService } from '../users.service';
 import { CreateRelationshipDto } from './dto/create-relationship.dto';
 import { UpdateRelationshipDto } from './dto/update-relationship.dto';
@@ -17,6 +20,7 @@ import {
   Relationship,
   RelationshipStatus,
 } from './entities/relationship.entity';
+import { RelationshipsRoutingKey } from './enums/relationships-routing-key.enum';
 
 @Injectable()
 export class RelationshipsService {
@@ -25,6 +29,7 @@ export class RelationshipsService {
     private relationshipRepo: Repository<Relationship>,
     private readonly channelsService: ChannelsService,
     private readonly usersService: UsersService,
+    private readonly amqpConnection: AmqpConnection,
   ) {}
 
   async findRelationshipById(relationshipId: string) {
@@ -85,12 +90,15 @@ export class RelationshipsService {
     }
 
     const newRelationship = {
+      id: nanoid(),
       creator: user,
       receiver: invitedUser,
       status: RelationshipStatus.PENDING,
     };
 
     const response = await this.relationshipRepo.save(newRelationship);
+
+    this.publishEvent(RelationshipsRoutingKey.CREATE, response);
 
     return response;
   }
@@ -114,11 +122,22 @@ export class RelationshipsService {
       throw new ForbiddenException();
     }
 
-    await this.channelsService.createPrivateChannel(undefined, [
-      relationship.creator.id,
-      relationship.receiver.id,
-    ]);
+    const updatedRelationship = await this.relationshipRepo.save({
+      ...relationship,
+      status,
+    });
 
-    return this.relationshipRepo.save({ ...relationship, status });
+    this.publishEvent(RelationshipsRoutingKey.UPDATE, updatedRelationship);
+
+    return updatedRelationship;
+  }
+
+  publishEvent(routingKey: RelationshipsRoutingKey, message: Relationship) {
+    console.log('publishing', routingKey);
+
+    this.amqpConnection.publish(DEFAULT_EXCHANGE_NAME, routingKey, message, {
+      deliveryMode: 2,
+      persistent: true,
+    });
   }
 }

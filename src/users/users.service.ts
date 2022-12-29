@@ -19,7 +19,7 @@ export class UsersService {
   constructor(
     @InjectRepository(User) private usersRepo: Repository<User>,
     private readonly amqpConnection: AmqpConnection,
-  ) { }
+  ) {}
   private readonly logger = new Logger(UsersService.name);
 
   async findById(userId: string): Promise<User> {

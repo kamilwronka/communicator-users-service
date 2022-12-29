@@ -3,9 +3,9 @@ import {
   Entity,
   CreateDateColumn,
   UpdateDateColumn,
-  PrimaryGeneratedColumn,
   ManyToOne,
   Column,
+  PrimaryColumn,
 } from 'typeorm';
 
 export enum RelationshipStatus {
@@ -16,7 +16,7 @@ export enum RelationshipStatus {
 
 @Entity()
 export class Relationship {
-  @PrimaryGeneratedColumn('uuid')
+  @PrimaryColumn()
   id: string;
 
   @ManyToOne(() => User, (user: User) => user.sent_relationship_requests)

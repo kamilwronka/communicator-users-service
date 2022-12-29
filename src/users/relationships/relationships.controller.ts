@@ -1,4 +1,13 @@
-import { Body, Controller, Get, Param, Patch, Post } from '@nestjs/common';
+import {
+  Body,
+  ClassSerializerInterceptor,
+  Controller,
+  Get,
+  Param,
+  Patch,
+  Post,
+  UseInterceptors,
+} from '@nestjs/common';
 import { ApiBearerAuth, ApiParam, ApiTags } from '@nestjs/swagger';
 import { UserId } from 'src/decorators/userId.decorator';
 import { CreateRelationshipDto } from './dto/create-relationship.dto';
@@ -6,16 +15,20 @@ import {
   UpdateRelationshipDto,
   UpdateRelationshipParamsDto,
 } from './dto/update-relationship.dto';
+import { MappedRelationship } from './helpers/mapUserRelationships.helper';
 import { RelationshipsService } from './relationships.service';
 
 @ApiTags('relationships')
 @ApiBearerAuth()
+@UseInterceptors(ClassSerializerInterceptor)
 @Controller('me/relationships')
 export class RelationshipsController {
   constructor(private readonly relationshipsService: RelationshipsService) {}
 
   @Get('')
-  async getUserRelationships(@UserId() userId: string) {
+  async getUserRelationships(
+    @UserId() userId: string,
+  ): Promise<MappedRelationship[]> {
     return this.relationshipsService.get(userId);
   }
 

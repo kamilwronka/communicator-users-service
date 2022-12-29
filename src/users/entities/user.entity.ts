@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Exclude } from 'class-transformer';
-import { createHash } from 'crypto'
+import { createHash } from 'crypto';
 import {
   Entity,
   Column,
@@ -69,8 +69,30 @@ export class User {
   @BeforeInsert()
   @BeforeUpdate()
   private generateVersionHash(): void {
-    const { received_relationship_requests, sent_relationship_requests, version_hash, generateVersionHash, ...rest } = this;
-    this.version_hash = createHash('sha256').update(JSON.stringify(rest)).digest('hex');
+    const {
+      id,
+      email,
+      username,
+      avatar,
+      description,
+      created_at,
+      updated_at,
+      version,
+    } = this;
+    this.version_hash = createHash('sha256')
+      .update(
+        JSON.stringify({
+          id,
+          email,
+          username,
+          avatar,
+          description,
+          created_at,
+          updated_at,
+          version,
+        }),
+      )
+      .digest('hex');
   }
 
   constructor(partial: Partial<User>) {

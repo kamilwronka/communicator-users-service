@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsEnum, IsNotEmpty, IsString, IsUUID } from 'class-validator';
+import { IsEnum, IsNotEmpty, IsString } from 'class-validator';
 import { RelationshipStatus } from '../entities/relationship.entity';
 
 export class UpdateRelationshipDto {
@@ -16,6 +16,5 @@ export class UpdateRelationshipDto {
 export class UpdateRelationshipParamsDto {
   @IsNotEmpty()
   @IsString()
-  @IsUUID()
   id: string;
 }
