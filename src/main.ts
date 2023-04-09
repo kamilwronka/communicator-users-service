@@ -19,7 +19,7 @@ async function bootstrap() {
 
   const swaggerConfig = new DocumentBuilder()
     .setTitle('Users service API')
-    .setDescription('Users service API')
+    .setDescription('Users service API documentation')
     .setVersion(process.env.npm_package_version)
     .addBearerAuth()
     .addServer('/users')
