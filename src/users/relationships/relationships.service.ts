@@ -132,6 +132,23 @@ export class RelationshipsService {
     return updatedRelationship;
   }
 
+  async delete(userId: string, relationshipId: string) {
+    const relationship = await this.findRelationshipById(relationshipId);
+
+    if (
+      userId === relationship.creator.id ||
+      userId === relationship.receiver.id
+    ) {
+      await this.relationshipRepo.delete({ id: relationshipId });
+
+      this.publishEvent(RelationshipsRoutingKey.DELETE, relationship);
+
+      return;
+    }
+
+    throw new ForbiddenException();
+  }
+
   publishEvent(routingKey: RelationshipsRoutingKey, message: Relationship) {
     console.log('publishing', routingKey);
 

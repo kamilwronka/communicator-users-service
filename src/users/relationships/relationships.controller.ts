@@ -2,6 +2,7 @@ import {
   Body,
   ClassSerializerInterceptor,
   Controller,
+  Delete,
   Get,
   Param,
   Patch,
@@ -17,6 +18,7 @@ import {
 } from './dto/update-relationship.dto';
 import { MappedRelationship } from './helpers/mapUserRelationships.helper';
 import { RelationshipsService } from './relationships.service';
+import { DeleteRelationshipParamsDto } from './dto/delete-relationship.dto';
 
 @ApiTags('relationships')
 @ApiBearerAuth()
@@ -48,5 +50,14 @@ export class RelationshipsController {
     @Body() data: UpdateRelationshipDto,
   ) {
     return this.relationshipsService.respond(userId, params.id, data);
+  }
+
+  @ApiParam({ name: 'id', type: String })
+  @Delete(':id')
+  async deleteRelationship(
+    @UserId() userId: string,
+    @Param() params: DeleteRelationshipParamsDto,
+  ) {
+    return this.relationshipsService.delete(userId, params.id);
   }
 }

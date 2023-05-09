@@ -29,7 +29,7 @@ export class ProfileService {
     @InjectRepository(User) private usersRepo: Repository<User>,
     private readonly s3Client: S3Client,
     private readonly amqpConnection: AmqpConnection,
-  ) { }
+  ) {}
 
   async create(userId: string, { username, avatar }: CreateProfileDto) {
     const userByUsername = await this.usersService.findByUsername(
