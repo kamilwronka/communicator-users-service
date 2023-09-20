@@ -24,54 +24,16 @@ spec:
           ports:
             - containerPort: 4000
           env:
-            #app
-            - name: ENV
-              value: local
-            - name: PORT
-              value: "4000"
-            #postgres
-            - name: POSTGRES_HOST
-              value: postgres-postgresql
-            - name: POSTGRES_PORT
-              value: "5432"
-            - name: POSTGRES_USERNAME
-              value: postgres
-            - name: POSTGRES_DATABASE
-              value: postgres
             - name: POSTGRES_PASSWORD
               valueFrom:
                 secretKeyRef:
                   name: postgres-postgresql
                   key: postgres-password
-            # rabbitmq
-            - name: RABBITMQ_HOST
-              value: rabbitmq
-            - name: RABBITMQ_ACCESS_PORT
-              value: "5672"
-            - name: RABBITMQ_USER
-              value: user
             - name: RABBITMQ_PASSWORD
               valueFrom:
                 secretKeyRef:
                   name: rabbitmq
                   key: rabbitmq-password
-            # aws
-            # - name: AWS_ACCESS_KEY_ID
-            #   valueFrom:
-            #     secretKeyRef:
-            #       name: aws
-            #       key: aws-access-key-id
-            # - name: AWS_SECRET_ACCESS_KEY
-            #   valueFrom:
-            #     secretKeyRef:
-            #       name: aws
-            #       key: aws-secret-access-key
-            # - name: AWS_S3_BUCKET_NAME
-            #   valueFrom:
-            #     secretKeyRef:
-            #       name: aws
-            #       key: aws-s3-bucket-name
-
 ---
 apiVersion: v1
 kind: Service

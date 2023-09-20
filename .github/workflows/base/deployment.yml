@@ -19,11 +19,11 @@ spec:
           image: communicator
           resources:
             requests:
-              memory: "128Mi"
-              cpu: "200m"
+              memory: '256Mi'
+              cpu: '300m'
             limits:
-              memory: "256Mi"
-              cpu: "200m"
+              memory: '384Mi'
+              cpu: '300m'
           ports:
             - name: container-port
               containerPort: 4000
@@ -32,12 +32,12 @@ spec:
             - name: ENV
               value: dev
             - name: PORT
-              value: "4000"
+              value: '4000'
             #postgres
             - name: POSTGRES_HOST
               value: users-database-postgresql
             - name: POSTGRES_PORT
-              value: "5432"
+              value: '5432'
             - name: POSTGRES_USERNAME
               value: postgres
             - name: POSTGRES_DATABASE
@@ -51,7 +51,7 @@ spec:
             - name: RABBITMQ_HOST
               value: rabbitmq
             - name: RABBITMQ_ACCESS_PORT
-              value: "5672"
+              value: '5672'
             - name: RABBITMQ_USER
               value: user
             - name: RABBITMQ_PASSWORD
@@ -80,9 +80,11 @@ spec:
             httpGet:
               path: /healthz
               port: container-port
+            initialDelaySeconds: 60
+            periodSeconds: 30
 
           readinessProbe:
             tcpSocket:
               port: container-port
-            initialDelaySeconds: 10
-            periodSeconds: 10
+            initialDelaySeconds: 60
+            periodSeconds: 60

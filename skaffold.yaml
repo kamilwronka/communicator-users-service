@@ -1,13 +1,12 @@
-apiVersion: skaffold/v2beta28
+apiVersion: skaffold/v4beta6
 kind: Config
+metadata:
+  name: users
 build:
-  local:
-    concurrency: 1
-    push: false
   artifacts:
     - image: users
       docker:
         dockerfile: Dockerfile.dev
 manifests:
   rawYaml:
-    - "./dev-k8s.yml"
+    - dev-k8s.yml
