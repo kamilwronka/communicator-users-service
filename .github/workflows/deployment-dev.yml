@@ -24,10 +24,6 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
 
-      - name: Use Node.js for tests
-        uses: actions/setup-node@v3
-        with:
-          node-version: 19.x
       - run: npm ci
       # - run: npm run test:cov
 
