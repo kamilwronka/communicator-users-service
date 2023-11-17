@@ -4,18 +4,18 @@ metadata:
   name: users
   annotations:
     konghq.com/protocols: https
-    konghq.com/https-redirect-status-code: "308"
+    konghq.com/https-redirect-status-code: '308'
     konghq.com/plugins: jwt, cors
-    konghq.com/strip-path: "true"
-    konghq.com/preserve-host: "false"
+    konghq.com/strip-path: 'true'
+    konghq.com/preserve-host: 'false'
 spec:
   tls:
     - hosts:
-        - dev.api.communicator.kamilwronka.com
+        - dev-api-communicator.lootlog.pl
       secretName: tls
   ingressClassName: kong
   rules:
-    - host: dev.api.communicator.kamilwronka.com
+    - host: dev-api-communicator.lootlog.pl
       http:
         paths:
           - path: /users
